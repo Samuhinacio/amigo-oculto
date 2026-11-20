@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Amigo Oculto da Família</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Festa de fim de ano: fundo verde-pinheiro, cartões cor de papel, laço vermelho e dourado. Uma coluna, passos numerados de 1 a 4. */
+  --pine:#0f2e26;
+  --pine-2:#1a4639;
+  --paper:#fbf8f2;
+  --ink:#1c2924;
+  --muted:#5a6863;
+  --line:#e3dccf;
+  --berry:#b4233a;
+  --berry-dark:#8e1a2c;
+  --gold:#e3b64c;
+  --ok:#1f7a4d;
+  --wa:#1b9e50;
+  --on-pine:#f2eee5;
+  --display:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--pine);color:var(--on-pine);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:radial-gradient(circle at 15% 0%, rgba(227,182,76,.12), transparent 40%),radial-gradient(circle at 100% 30%, rgba(180,35,58,.18), transparent 45%);min-height:100%}
+#app{max-width:720px;margin:0 auto;padding:28px 16px 64px;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(34px,8vw,52px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:22px;font-weight:700}
+p{margin:0}
+a{color:inherit}
+.hero{display:flex;flex-direction:column;gap:10px;padding:8px 2px 4px}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.lede{font-size:17px;max-width:58ch;color:#d9e2dc}
+.sync{font-size:14px;color:#cfe0d7;display:flex;gap:8px;align-items:baseline}
+.sync::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--gold);transform:translateY(-1px)}
+.sync[data-st="saved"]::before{background:#5fd39a}
+.sync[data-st="local"]::before,.sync[data-st="offline"]::before,.sync[data-st="choose"]::before{background:#ff8a8a}
+.opt{border:1.5px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.opt .eyebrow{color:var(--berry);margin-bottom:4px}
+.ribbon{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--berry) 0 70%,var(--gold) 70% 100%);width:88px}
+
+.card{background:var(--paper);color:var(--ink);border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.step-head{display:flex;align-items:center;gap:12px}
+.num{flex:none;width:32px;height:32px;border-radius:50%;background:var(--berry);color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:16px}
+.step-head .chip{margin-left:auto}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid .wide{grid-column:1/-1}
+@media (max-width:480px){.grid{grid-template-columns:1fr}}
+label{display:flex;flex-direction:column;gap:5px;font-size:14px;font-weight:600;color:var(--ink)}
+label small{font-weight:500;color:var(--muted)}
+input,textarea,select{font:inherit;font-size:16px;color:var(--ink);background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:70px}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--berry);box-shadow:0 0 0 3px rgba(180,35,58,.15)}
+.money{position:relative}
+.money span{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:600;pointer-events:none}
+.money input{padding-left:40px}
+
+.btn{font:inherit;font-weight:700;font-size:15px;border:0;border-radius:12px;padding:11px 16px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;line-height:1.2;transition:transform .08s ease, background .15s ease}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible,.icon-btn:focus-visible,summary:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn.primary{background:var(--berry);color:#fff}
+.btn.primary:hover{background:var(--berry-dark)}
+.btn.big{font-size:17px;padding:15px 22px;width:100%}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{border-color:var(--muted)}
+.btn.wa{background:var(--wa);color:#fff}
+.btn.wa:hover{background:#158442}
+.btn.danger{background:transparent;color:var(--berry);border:1.5px solid rgba(180,35,58,.35)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row > .grow{flex:1 1 180px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:4px 10px;border-radius:999px;background:#efe9dc;color:var(--ink);white-space:nowrap}
+.chip.ok{background:#dcefe4;color:var(--ok)}
+.chip.wait{background:#f6e7c4;color:#7a5a12}
+
+.banner{background:var(--pine-2);border:1px dashed rgba(227,182,76,.6);border-radius:14px;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--on-pine)}
+.banner p{flex:1 1 240px}
+.banner .btn{background:var(--gold);color:var(--pine)}
+
+.people{display:flex;flex-direction:column;gap:12px}
+.person{border:1.5px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.p-main{display:flex;gap:10px;align-items:center}
+.p-num{flex:none;width:26px;text-align:center;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.p-main input{font-weight:600}
+.icon-btn{flex:none;width:40px;height:40px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:22px;line-height:1;cursor:pointer}
+.icon-btn:hover{color:var(--berry);border-color:var(--berry)}
+.p-extra{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-left:36px}
+.p-extra .wide{grid-column:1/-1}
+.p-extra label{font-size:13px}
+.p-extra input,.p-extra select{font-size:15px;padding:8px 10px}
+.via-note{font-size:13px;color:var(--muted);font-weight:500;align-self:end;padding:8px 0}
+.shared{border:2px dashed var(--gold);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px;background:#fffaf0}
+.shared-head{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.shared-head .phone{font-size:13px;color:var(--muted)}
+.shared .btn.wa{width:100%}
+.who{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+.who .who-name{font-family:var(--display);font-weight:800;font-size:clamp(30px,8vw,44px);color:var(--berry);line-height:1.1}
+.who .row{justify-content:center;width:100%}
+.who .row .btn{flex:1 1 160px}
+@media (max-width:480px){.p-extra{grid-template-columns:1fr;padding-left:0}}
+
+details{border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:700;color:var(--berry);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+ ";}
+details[open] summary::before{content:"– ";}
+details > div{margin-top:12px;display:flex;flex-direction:column;gap:10px}
+
+.checks{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.checks li{display:flex;gap:10px;align-items:flex-start;font-size:15px}
+.dot{flex:none;width:10px;height:10px;border-radius:50%;margin-top:7px;background:var(--ok)}
+.dot.bad{background:var(--berry)}
+.dot.warn{background:var(--gold)}
+.error{background:#fbe5e8;color:var(--berry-dark);border-radius:10px;padding:10px 12px;font-size:15px;font-weight:600}
+
+.summary-list{display:flex;flex-wrap:wrap;gap:8px}
+.summary-list .chip{background:#fff;border:1.5px solid var(--line);font-weight:600}
+dl.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0;font-size:15px}
+dl.facts dt{color:var(--muted);font-weight:600}
+dl.facts dd{margin:0;font-weight:600}
+
+.progress{height:10px;border-radius:5px;background:#ece5d6;overflow:hidden}
+.progress > i{display:block;height:100%;background:var(--ok);border-radius:5px;transition:width .3s ease}
+.send-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.send-item{border:1.5px solid var(--line);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:10px;background:#fff}
+.send-item.done{border-color:#b9dcc8;background:#f5fbf7}
+.send-top{display:flex;align-items:center;gap:10px}
+.send-top b{font-size:17px}
+.send-top .phone{font-size:13px;color:var(--muted)}
+.send-top .chip{margin-left:auto}
+.send-actions{display:flex;gap:8px;flex-wrap:wrap}
+.send-actions .btn{padding:9px 13px;font-size:14px}
+.send-actions .btn.wa{flex:1 1 160px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;font-size:14px;color:var(--muted);text-decoration:underline;cursor:pointer}
+
+footer{font-size:14px;color:#b8c7c0;display:flex;flex-direction:column;gap:6px;padding:6px 2px}
+
+/* Tela de quem recebe o link */
+.reveal-card{align-items:center;text-align:center;gap:18px;padding:28px 20px}
+.hello{font-size:22px;font-family:var(--display);font-weight:700}
+.gift{position:relative;width:150px;height:150px;margin:6px auto 0}
+.gift .box{position:absolute;left:15px;right:15px;bottom:0;height:92px;background:var(--berry);border-radius:8px}
+.gift .box::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:22px;transform:translateX(-50%);background:var(--gold)}
+.gift .lid{position:absolute;left:5px;right:5px;top:30px;height:32px;background:var(--berry-dark);border-radius:8px;transition:transform .7s cubic-bezier(.3,1.4,.5,1), opacity .7s ease;transform-origin:20% 100%}
+.gift .lid::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:22px;transform:translateX(-50%);background:var(--gold)}
+.gift .bow{position:absolute;left:50%;top:-22px;width:60px;height:26px;transform:translateX(-50%)}
+.gift .bow::before,.gift .bow::after{content:"";position:absolute;top:0;width:28px;height:24px;border:6px solid var(--gold);border-radius:50% 50% 50% 50%/60% 60% 40% 40%}
+.gift .bow::before{left:0;transform:rotate(-20deg)}
+.gift .bow::after{right:0;transform:rotate(20deg)}
+.gift.open .lid{transform:translate(-30px,-70px) rotate(-28deg);opacity:0}
+.gift.open{animation:hop .5s ease}
+@keyframes hop{30%{transform:translateY(-6px)}60%{transform:translateY(2px)}}
+.result{display:flex;flex-direction:column;gap:6px;align-items:center;animation:rise .6s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.result .label{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.drawn{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,60px);color:var(--berry);line-height:1.05;text-wrap:balance}
+.hint{background:#fff6dd;border-radius:10px;padding:8px 12px;font-size:15px;max-width:40ch}
+.notes{white-space:pre-wrap}
+
+.modal-bg{position:fixed;inset:0;background:rgba(6,20,16,.6);display:grid;place-items:center;padding:16px;z-index:50}
+.modal{background:var(--paper);color:var(--ink);border-radius:18px;padding:22px;max-width:480px;width:100%;display:flex;flex-direction:column;gap:14px;max-height:90%;overflow:auto}
+.modal .row{justify-content:flex-end}
+.pairs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:16px}
+.pairs li{display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.pairs span{color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:60}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+/* Link público desta página. Pode ser trocado em "Link da página" na tela de envio. */
+const DEFAULT_URL = "https://claude.ai/artifact/JYHNy4WbdFvnNbRPnYx66F";
+const STORE = "amigo-oculto-familia-v1";
+const app = document.getElementById("app");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+/* ---------- Código do link (sem servidor: o resultado viaja embaralhado no próprio link) ---------- */
+const ALPHA = "abcdefghijkmnpqrstuvwxyz23456789";
+function b32enc(bytes){
+  let bits = 0, val = 0, out = "";
+  for (const b of bytes){
+    val = (val << 8) | b; bits += 8;
+    while (bits >= 5){ out += ALPHA[(val >>> (bits - 5)) & 31]; bits -= 5; }
+    val &= (1 << bits) - 1;
+  }
+  if (bits > 0) out += ALPHA[(val << (5 - bits)) & 31];
+  return out;
+}
+function b32dec(str){
+  const out = []; let bits = 0, val = 0;
+  for (const ch of str){
+    const i = ALPHA.indexOf(ch);
+    if (i < 0) throw new Error("caractere inválido");
+    val = (val << 5) | i; bits += 5;
+    if (bits >= 8){ out.push((val >>> (bits - 8)) & 255); bits -= 8; val &= (1 << bits) - 1; }
+  }
+  return new Uint8Array(out);
+}
+function fnv16(bytes){
+  let h = 0x811c9dc5;
+  for (const b of bytes){ h ^= b; h = Math.imul(h, 0x01000193) >>> 0; }
+  return (h ^ (h >>> 16)) & 0xffff;
+}
+function keystream(s0, s1, len){
+  let a = ((((s0 << 8) | s1) * 2654435761) ^ 0x6f1c3a5d) >>> 0;
+  const out = new Uint8Array(len);
+  for (let i = 0; i < len; i++){
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    out[i] = ((t ^ (t >>> 14)) >>> 0) & 255;
+  }
+  return out;
+}
+const SEP = "\u001e";
+function randBytes(n){
+  const a = new Uint8Array(n);
+  try { crypto.getRandomValues(a); } catch(e){ for (let i = 0; i < n; i++) a[i] = Math.floor(Math.random() * 256); }
+  return a;
+}
+function pack(data, ver){
+  const h = fnv16(data);
+  const body = new Uint8Array(data.length + 2);
+  body.set(data); body[data.length] = h >> 8; body[data.length + 1] = h & 255;
+  const salt = randBytes(2);
+  const ks = keystream(salt[0], salt[1], body.length);
+  const out = new Uint8Array(body.length + 3);
+  out[0] = ver; out[1] = salt[0]; out[2] = salt[1];
+  for (let i = 0; i < body.length; i++) out[i + 3] = body[i] ^ ks[i];
+  return b32enc(out);
+}
+function unpack(str, ver){
+  let bytes;
+  try { bytes = b32dec(str); } catch(e){ return null; }
+  if (bytes.length < 6 || bytes[0] !== ver) return null;
+  const ks = keystream(bytes[1], bytes[2], bytes.length - 3);
+  const body = bytes.slice(3).map((b, i) => b ^ ks[i]);
+  const data = body.slice(0, -2);
+  const h = (body[body.length - 2] << 8) | body[body.length - 1];
+  return fnv16(data) === h ? data : null;
+}
+function makeCode(fields){
+  const data = new TextEncoder().encode(fields.map(f => String(f ?? "").split(SEP).join(" ")).join(SEP));
+  return "ao-" + pack(data, 1);
+}
+function findCode(raw){
+  const m = String(raw || "").match(/ao-[a-z0-9]{8,}/i);
+  return m ? m[0].toLowerCase() : null;
+}
+function readCode(raw){
+  const code = findCode(raw);
+  if (!code) return null;
+  const data = unpack(code.slice(3), 1);
+  if (!data) return null;
+  const f = new TextDecoder().decode(data).split(SEP);
+  if (f.length < 10) return null;
+  const [drawId, name, date, time, place, budget, notes, giver, receiver, hint] = f;
+  return { drawId, name, date, time, place, budget, notes, giver, receiver, hint };
+}
+
+/* ---------- Estado do organizador (fica só neste navegador) ---------- */
+function sample(){
+  const g = "Ana e Pedro";
+  return {
+    example: true,
+    event: { name: "Natal da Família 2026", date: "2026-12-24", time: "20:00", place: "Casa da vó Lúcia", budget: "100", notes: "Leve o presente embrulhado e com o nome de quem vai receber." },
+    people: [
+      { id: uid(), name: "Vó Lúcia", phone: "", group: "", hint: "" },
+      { id: uid(), name: "Ana", phone: "", group: g, hint: "Adora plantas" },
+      { id: uid(), name: "Pedro", phone: "", group: g, hint: "" },
+      { id: uid(), name: "Tio Carlos", phone: "", group: "", hint: "Torce pro Palmeiras" },
+      { id: uid(), name: "Mariana", phone: "", group: "", hint: "" },
+      { id: uid(), name: "Júlia", phone: "", group: "", hint: "Livros de suspense" }
+    ],
+    draw: null, sent: {}, baseUrl: ""
+  };
+}
+function sampleState(){
+  const s = sample();
+  s.people[0].via = s.people[1].id;
+  return s;
+}
+function blank(){
+  return { example: false, event: { name: "Amigo Oculto da Família", date: "2026-12-24", time: "", place: "", budget: "", notes: "" }, people: [], draw: null, sent: {}, baseUrl: state ? state.baseUrl : "", me: state ? state.me : "" };
+}
+function load(){
+  try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && s.event && Array.isArray(s.people)) return s; } catch(e){}
+  return null;
+}
+let saveTimer = null;
+function storeLocal(){ try { localStorage.setItem(STORE, JSON.stringify(state)); } catch(e){} }
+function save(){
+  state.updatedAt = Date.now();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(storeLocal, 200);
+  scheduleRemote();
+}
+let state = load() || sampleState();
+
+/* ---------- Salvar na conta do Claude (mesma lista no celular e no computador) ---------- */
+const TAB = uid();
+const sync = { status: (window.claude && typeof window.claude.use === "function") ? "loading" : "local", ref: null, writing: false, again: false, timer: null, blocked: false, pendingRender: false };
+const SYNC_TEXT = {
+  loading: "Carregando da sua conta…",
+  saving: "Salvando na sua conta…",
+  saved: "Salvo na sua conta do Claude. Abre igual no celular e no computador.",
+  local: "Salvo só neste aparelho. Entre na sua conta do Claude para ver a mesma lista no celular e no computador.",
+  offline: "Sem conexão com a sua conta agora. As mudanças ficam neste aparelho por enquanto.",
+  choose: "Escolha qual versão manter."
+};
+function setSyncStatus(st){
+  sync.status = st;
+  const el = document.getElementById("sync");
+  if (el){ el.textContent = SYNC_TEXT[st] || ""; el.dataset.st = st; }
+}
+function scheduleRemote(){
+  if (!sync.ref || sync.blocked) return;
+  clearTimeout(sync.timer);
+  setSyncStatus("saving");
+  sync.timer = setTimeout(pushRemote, 800);
+}
+async function pushRemote(){
+  if (!sync.ref || sync.blocked) return;
+  if (sync.writing){ sync.again = true; return; }
+  sync.writing = true;
+  const body = JSON.parse(JSON.stringify(state));
+  delete body.syncedAt;
+  const at = state.updatedAt || Date.now();
+  try {
+    await sync.ref.set({ state: body, updatedAt: at, writer: TAB });
+    state.syncedAt = at; storeLocal();
+    setSyncStatus(sync.again ? "saving" : "saved");
+  } catch(e){
+    if (e && e.code === "unavailable" && !sync.retried){
+      sync.retried = true;
+      setTimeout(() => { sync.writing = false; pushRemote(); }, 1500 + Math.random() * 1500);
+      return;
+    }
+    sync.ref = null;
+    setSyncStatus("local");
+  }
+  sync.retried = false;
+  sync.writing = false;
+  if (sync.again){ sync.again = false; pushRemote(); }
+}
+function sig(s){ return JSON.stringify({ e: s.event, p: s.people, d: s.draw, x: s.sent }); }
+function inOrganizerView(){ return !/^#?(ao|org)-/i.test(location.hash); }
+function rerender(){
+  if (!inOrganizerView()) return;
+  const ae = document.activeElement;
+  if (ae && app.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ sync.pendingRender = true; return; }
+  render();
+}
+document.addEventListener("focusout", () => {
+  if (!sync.pendingRender) return;
+  setTimeout(() => {
+    const ae = document.activeElement;
+    if (ae && app.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return;
+    sync.pendingRender = false; rerender();
+  }, 50);
+});
+function adopt(r){
+  state = Object.assign({}, r.state, { syncedAt: r.updatedAt, updatedAt: r.updatedAt });
+  storeLocal();
+  setSyncStatus("saved");
+  rerender();
+}
+function describeState(s){
+  const n = (s.people || []).filter(p => (p.name || "").trim()).length;
+  const d = s.draw ? `sorteio feito (nº ${s.draw.id})` : "sem sorteio ainda";
+  const when = s.updatedAt ? new Date(s.updatedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" }) : "data desconhecida";
+  return `<b>${esc((s.event && s.event.name) || "Sem nome")}</b><br>${n} pessoas · ${d}<br><span class="muted small">Alterada em ${esc(when)}</span>`;
+}
+function askConflict(r){
+  sync.blocked = true;
+  setSyncStatus("choose");
+  modal("Qual versão manter?", `
+    <p>Este aparelho e a sua conta têm listas diferentes do amigo oculto. Escolha a que vale; a outra é descartada.</p>
+    <div class="opt"><p class="eyebrow">Salva na sua conta</p><p>${describeState(r.state)}</p></div>
+    <div class="opt"><p class="eyebrow">Neste aparelho</p><p>${describeState(state)}</p></div>`,
+    [
+      { label: "Manter a deste aparelho", run: () => { sync.blocked = false; state.updatedAt = Date.now(); storeLocal(); pushRemote(); } },
+      { label: "Manter a da conta", cls: "primary", run: () => { sync.blocked = false; adopt(r); } }
+    ], { sticky: true });
+}
+function onFirst(snap){
+  const r = snap.exists ? snap.data() : null;
+  if (!r || !r.state){
+    if (!state.example) pushRemote(); else setSyncStatus("saved");
+    return;
+  }
+  if (state.example || sig(r.state) === sig(state)){ adopt(r); return; }
+  const dirty = !state.syncedAt || (state.updatedAt || 0) > state.syncedAt;
+  if (!dirty){ adopt(r); return; }
+  if (state.syncedAt && state.syncedAt === r.updatedAt){ pushRemote(); return; }
+  askConflict(r);
+}
+function onRemote(snap){
+  if (!snap.exists || sync.blocked) return;
+  const r = snap.data();
+  if (!r || !r.state || r.writer === TAB) return;
+  if ((r.updatedAt || 0) <= (state.syncedAt || 0)) return;
+  if ((state.updatedAt || 0) > (state.syncedAt || 0)) return; // há mudança local a caminho; a última gravação vale
+  adopt(r);
+}
+async function connectSync(){
+  if (!(window.claude && typeof window.claude.use === "function")){ setSyncStatus("local"); return; }
+  let db = null, user = null, id = null;
+  try { [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]); } catch(e){}
+  if (db && user){ try { id = await user.id(); } catch(e){} }
+  if (!db || !id){ setSyncStatus("local"); return; }
+  try { sync.ref = db.doc("data/users/" + id + "/amigo-oculto"); } catch(e){ setSyncStatus("local"); return; }
+  setSyncStatus("loading");
+  let first = true;
+  const timer = setTimeout(() => { if (first) setSyncStatus("offline"); }, 10000);
+  sync.ref.onSnapshot(snap => {
+    if (first){
+      if (snap.metadata.fromCache) return;
+      first = false; clearTimeout(timer); onFirst(snap);
+    } else if (!snap.metadata.hasPendingWrites){
+      onRemote(snap);
+    }
+  }, () => { clearTimeout(timer); sync.ref = null; setSyncStatus("local"); });
+}
+
+/* ---------- Formatação ---------- */
+function fmtDate(iso, withYear){
+  if (!iso) return "";
+  const [y, m, d] = iso.split("-").map(Number);
+  if (!y || !m || !d) return iso;
+  const opts = { weekday: "long", day: "numeric", month: "long" };
+  if (withYear) opts.year = "numeric";
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR", opts);
+}
+function fmtMoney(v){
+  const n = Number(String(v).replace(",", "."));
+  if (!v || isNaN(n)) return String(v || "");
+  return n.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: Number.isInteger(n) ? 0 : 2 });
+}
+function waPhone(p){
+  let d = String(p || "").replace(/\D/g, "");
+  if (!d) return "";
+  d = d.replace(/^0+/, "");
+  if (d.length === 10 || d.length === 11) d = "55" + d;
+  return d.length >= 12 ? d : "";
+}
+function pageUrl(){ return String(state.baseUrl || DEFAULT_URL).split("#")[0].trim(); }
+function whenText(ev){
+  let s = fmtDate(ev.date, false);
+  if (ev.time) s += (s ? " às " : "") + ev.time.replace(":", "h");
+  return s;
+}
+
+/* ---------- Sorteio ---------- */
+function shuffle(a){
+  const r = a.slice();
+  for (let i = r.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [r[i], r[j]] = [r[j], r[i]];
+  }
+  return r;
+}
+function solve(ppl){
+  const n = ppl.length;
+  const grp = ppl.map(p => (p.group || "").trim().toLowerCase());
+  const ok = (i, j) => i !== j && !(grp[i] && grp[i] === grp[j]);
+  const idx = [...Array(n).keys()];
+  // 1) Tenta uma corrente única (ninguém troca presente entre si)
+  for (let t = 0; t < 4000; t++){
+    const p = shuffle(idx);
+    let good = true;
+    for (let k = 0; k < n; k++){ if (!ok(p[k], p[(k + 1) % n])){ good = false; break; } }
+    if (good){
+      const pairs = {};
+      for (let k = 0; k < n; k++) pairs[ppl[p[k]].id] = ppl[p[(k + 1) % n]].id;
+      return pairs;
+    }
+  }
+  // 2) Qualquer sorteio válido
+  const order = shuffle(idx), used = new Array(n).fill(false), res = new Array(n);
+  let steps = 0;
+  function bt(k){
+    if (k === n) return true;
+    if (++steps > 300000) return false;
+    const i = order[k];
+    for (const j of shuffle(idx)){
+      if (!used[j] && ok(i, j)){
+        used[j] = true; res[i] = j;
+        if (bt(k + 1)) return true;
+        used[j] = false;
+      }
+    }
+    return false;
+  }
+  if (!bt(0)) return null;
+  const pairs = {};
+  for (let i = 0; i < n; i++) pairs[ppl[i].id] = ppl[res[i]].id;
+  return pairs;
+}
+function byId(id){ return state.people.find(p => p.id === id); }
+function host(p){
+  let cur = p; const seen = new Set();
+  while (cur && cur.via && !seen.has(cur.id)){
+    seen.add(cur.id);
+    const n = byId(cur.via);
+    if (!n || n === p) break;
+    cur = n;
+  }
+  return cur || p;
+}
+function effPhone(p){ return waPhone(host(p).phone); }
+function phoneLabel(p){
+  const h = host(p);
+  if (h !== p) return `no celular de ${h.name || "outra pessoa"}${h.phone ? " · " + h.phone : ""}`;
+  return p.phone || "";
+}
+function sendKey(p){ const ph = effPhone(p); return ph ? "tel:" + ph : "host:" + host(p).id; }
+function sharedGroups(list){
+  const map = {}, groups = [];
+  list.forEach(p => { const k = sendKey(p); if (!map[k]){ map[k] = []; groups.push(map[k]); } map[k].push(p); });
+  return groups;
+}
+function named(){ return state.people.filter(p => p.name.trim()); }
+function checks(){
+  const list = named();
+  const out = [];
+  if (list.length < 3) out.push({ k: "bad", t: `Adicione pelo menos 3 pessoas (agora: ${list.length}).` });
+  else out.push({ k: "ok", t: `${list.length} pessoas na lista.` });
+  const seen = {}, dups = new Set();
+  list.forEach(p => { const k = p.name.trim().toLowerCase(); if (seen[k]) dups.add(p.name.trim()); seen[k] = true; });
+  if (dups.size) out.push({ k: "bad", t: `Nome repetido: ${[...dups].join(", ")}. Use sobrenome ou apelido para diferenciar.` });
+  const groups = {};
+  list.forEach(p => { const g = (p.group || "").trim(); if (g) groups[g] = (groups[g] || 0) + 1; });
+  const gNames = Object.keys(groups).filter(g => groups[g] > 1);
+  if (gNames.length) out.push({ k: "ok", t: `Núcleos respeitados: ${gNames.join(", ")} não tiram um ao outro.` });
+  sharedGroups(list).filter(g => g.length > 1).forEach(g => {
+    out.push({ k: "ok", t: `Mesmo celular: ${g.map(p => p.name.trim()).join(" e ")}. Cada um recebe o próprio link.` });
+  });
+  const noPhone = list.filter(p => !effPhone(p)).length;
+  if (noPhone && list.length) out.push({ k: "warn", t: noPhone === list.length ? "Ninguém tem WhatsApp cadastrado. Tudo bem: na hora de enviar, você escolhe o contato no WhatsApp." : `${noPhone} sem WhatsApp cadastrado. Na hora de enviar, você escolhe o contato no WhatsApp.` });
+  return out;
+}
+
+/* ---------- Mensagens ---------- */
+function personalMessage(p){
+  const ev = state.draw.event;
+  const lines = [
+    `🎁 *Amigo Oculto – ${ev.name || "Família"}*`,
+    "",
+    ...(host(p) !== p
+      ? [`Oi! Este link é de *${p.name.trim()}*, que vai usar este celular. Entregue o celular para ${p.name.trim()} abrir, sem espiar 🤫`]
+      : [`Oi, ${p.name.trim()}! O sorteio foi feito.`, "Toque no link para ver quem você tirou. O link é só seu, não repasse:"]),
+    `${pageUrl()}#${state.draw.codes[p.id]}`,
+    ""
+  ];
+  const when = whenText(ev);
+  if (when) lines.push(`📅 ${when}`);
+  if (ev.place) lines.push(`📍 ${ev.place}`);
+  if (ev.budget) lines.push(`💰 Presente de até ${fmtMoney(ev.budget)}`);
+  lines.push("", "Shhh, guarde segredo! 🤫");
+  return lines.join("\n");
+}
+function groupMessage(){
+  const ev = state.draw.event;
+  const lines = [`🎄 *Amigo Oculto – ${ev.name || "Família"}*`, "", `O sorteio foi feito (sorteio nº ${state.draw.id})! Cada um vai receber no privado um link só seu, mostrando quem tirou.`, ""];
+  const when = whenText(ev);
+  if (when) lines.push(`📅 ${when}`);
+  if (ev.place) lines.push(`📍 ${ev.place}`);
+  if (ev.budget) lines.push(`💰 Presente de até ${fmtMoney(ev.budget)}`);
+  if (ev.notes) lines.push(`📝 ${ev.notes}`);
+  lines.push("", "Não conte para ninguém quem você tirou! 🤫");
+  return lines.join("\n");
+}
+function multiMessage(g){
+  const ev = state.draw.event;
+  const lines = [
+    `🎁 *Amigo Oculto – ${ev.name || "Família"}*`,
+    "",
+    `Oi! O sorteio foi feito. Aqui vão ${g.length} links, um para cada pessoa que vai usar este celular.`,
+    "Entregue o celular para cada um abrir *só o próprio link*, sem espiar o dos outros 🤫",
+    ""
+  ];
+  g.forEach(p => { lines.push(`👤 *${p.name.trim()}*`, `${pageUrl()}#${state.draw.codes[p.id]}`, ""); });
+  const when = whenText(ev);
+  if (when) lines.push(`📅 ${when}`);
+  if (ev.place) lines.push(`📍 ${ev.place}`);
+  if (ev.budget) lines.push(`💰 Presente de até ${fmtMoney(ev.budget)}`);
+  return lines.join("\n");
+}
+function waLink(p){
+  return `https://wa.me/${effPhone(p)}?text=${encodeURIComponent(personalMessage(p))}`;
+}
+function waMultiLink(g){
+  return `https://wa.me/${effPhone(g[0])}?text=${encodeURIComponent(multiMessage(g))}`;
+}
+
+/* ---------- Utilidades de interface ---------- */
+let toastTimer;
+function toast(t){
+  const el = document.getElementById("toast");
+  el.textContent = t; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+}
+function modal(title, bodyHtml, actions, opts){
+  const sticky = !!(opts && opts.sticky);
+  const bg = document.createElement("div");
+  bg.className = "modal-bg";
+  bg.innerHTML = `<div class="modal" role="dialog" aria-modal="true" aria-labelledby="m-title"><h2 id="m-title">${esc(title)}</h2>${bodyHtml}<div class="row">${actions.map((a, i) => `<button type="button" class="btn ${a.cls || "ghost"}" data-i="${i}">${esc(a.label)}</button>`).join("")}</div></div>`;
+  const close = () => { bg.remove(); document.removeEventListener("keydown", onKey); };
+  const onKey = e => { if (e.key === "Escape" && !sticky) close(); };
+  bg.addEventListener("click", e => {
+    if (e.target === bg){ if (!sticky) close(); return; }
+    const b = e.target.closest("button[data-i]");
+    if (b){ const a = actions[+b.dataset.i]; close(); if (a.run) a.run(); }
+  });
+  document.addEventListener("keydown", onKey);
+  document.body.appendChild(bg);
+  const first = bg.querySelector("textarea, button");
+  if (first) first.focus();
+  const ta = bg.querySelector("textarea");
+  if (ta) ta.select();
+}
+async function copy(text, okMsg){
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(okMsg || "Copiado");
+  } catch(e){
+    modal("Copie o texto", `<p class="small muted">Toque e segure no texto abaixo e escolha Copiar.</p><textarea id="copy-box" readonly rows="10">${esc(text)}</textarea>`, [{ label: "Fechar", cls: "primary" }]);
+  }
+}
+
+/* ---------- Tela do organizador ---------- */
+function renderOrganizer(){
+  const locked = !!state.draw;
+  app.innerHTML = `
+    <header class="hero">
+      <div class="ribbon" aria-hidden="true"></div>
+      <p class="eyebrow">Sorteio online</p>
+      <h1>Amigo Oculto da Família</h1>
+      <p class="lede">Cadastre quem vai participar e faça o sorteio. Cada pessoa recebe pelo WhatsApp um link que mostra só quem ela tirou. Nem quem organiza fica sabendo.</p>
+      <p class="sync" id="sync" data-st="${sync.status}" role="status">${esc(SYNC_TEXT[sync.status] || "")}</p>
+    </header>
+    ${state.example && !locked ? `<div class="banner"><p><b>Família de exemplo.</b> Troque os nomes pelos da sua família, ou comece com a lista vazia.</p><button type="button" class="btn" data-act="clear-example">Começar do zero</button></div>` : ""}
+    <section class="card" aria-labelledby="h-ev">
+      <div class="step-head"><span class="num">1</span><h2 id="h-ev">O evento</h2></div>
+      ${locked ? eventSummary(state.draw.event) : eventForm()}
+    </section>
+    <section class="card" aria-labelledby="h-pp">
+      <div class="step-head"><span class="num">2</span><h2 id="h-pp">Quem participa</h2><span class="chip" id="pp-count">${named().length} pessoas</span></div>
+      ${locked ? peopleSummary() : peopleEditor()}
+    </section>
+    <section class="card" aria-labelledby="h-dr">
+      <div class="step-head"><span class="num">3</span><h2 id="h-dr">Sorteio</h2>${locked ? `<span class="chip ok">Feito · nº ${esc(state.draw.id)}</span>` : ""}</div>
+      <div id="draw-panel">${locked ? drawDone() : drawPanel()}</div>
+    </section>
+    ${locked ? sendSection() : ""}
+    <section class="card" aria-labelledby="h-team">
+      <div class="step-head"><h2 id="h-team">Organizar junto com alguém</h2></div>
+      <p class="small muted">Mande um convite para quem vai coordenar com você. A pessoa recebe a lista${locked ? ", o sorteio e quem já recebeu o link" : ""} no celular dela e pode ajudar a enviar.</p>
+      <label for="me">Seu nome <small>aparece no convite</small><input id="me" value="${esc(state.me || "")}" placeholder="Ex.: Cláudia" autocomplete="given-name"></label>
+      <p class="error" id="me-err" hidden>Escreva seu nome para a pessoa saber de quem é o convite.</p>
+      <button type="button" class="btn ghost" data-act="invite">Convidar para organizar</button>
+      <p class="small muted">Cada celular guarda a sua cópia. Se alguém mudar a lista, refizer o sorteio ou marcar envios, mande o convite de novo para os dois ficarem iguais. O melhor é combinar antes quem envia para quem.</p>
+    </section>
+    <section class="card" aria-labelledby="h-code">
+      <details>
+        <summary id="h-code">Recebeu um link de amigo oculto e caiu nesta página?</summary>
+        <div>
+          <p class="small muted">Cole aqui a mensagem ou o link que você recebeu no WhatsApp.</p>
+          <label for="code-in">Link ou código<input id="code-in" autocomplete="off" placeholder="…#ao-…"></label>
+          <button type="button" class="btn primary" data-act="open-code">Ver meu resultado</button>
+          <p class="error" id="code-err" hidden>Não encontrei um código válido nesse texto. Copie a mensagem inteira que você recebeu e tente de novo.</p>
+        </div>
+      </details>
+    </section>
+    <footer>
+      <p>Os links enviados funcionam em qualquer celular, sem precisar de conta.</p>
+    </footer>`;
+}
+function eventForm(){
+  const e = state.event;
+  return `<div class="grid">
+    <label class="wide" for="ev-name">Nome do evento<input id="ev-name" data-ev="name" value="${esc(e.name)}" placeholder="Natal da Família 2026"></label>
+    <label for="ev-date">Data da troca<input id="ev-date" type="date" data-ev="date" value="${esc(e.date)}"></label>
+    <label for="ev-time">Horário <small>opcional</small><input id="ev-time" type="time" data-ev="time" value="${esc(e.time)}"></label>
+    <label for="ev-place">Local <small>opcional</small><input id="ev-place" data-ev="place" value="${esc(e.place)}" placeholder="Casa da vó"></label>
+    <label for="ev-budget">Valor do presente <small>até</small><span class="money"><span>R$</span><input id="ev-budget" data-ev="budget" inputmode="decimal" value="${esc(e.budget)}" placeholder="100"></span></label>
+    <label class="wide" for="ev-notes">Recado para todos <small>opcional</small><textarea id="ev-notes" data-ev="notes" rows="2" placeholder="Ex.: leve o presente embrulhado">${esc(e.notes)}</textarea></label>
+  </div>`;
+}
+function eventSummary(e){
+  const rows = [["Evento", e.name], ["Quando", [fmtDate(e.date, true), e.time].filter(Boolean).join(" · ")], ["Local", e.place], ["Valor", e.budget ? "até " + fmtMoney(e.budget) : ""], ["Recado", e.notes]].filter(r => r[1]);
+  return `<dl class="facts">${rows.map(r => `<dt>${r[0]}</dt><dd class="${r[0] === "Recado" ? "notes" : ""}">${esc(r[1])}</dd>`).join("")}</dl>`;
+}
+function personRow(p, i){
+  const id = p.id;
+  return `<div class="person" data-id="${id}">
+    <div class="p-main">
+      <span class="p-num">${i + 1}</span>
+      <input id="p-${id}-name" data-f="name" value="${esc(p.name)}" placeholder="Nome" aria-label="Nome da pessoa ${i + 1}">
+      <button type="button" class="icon-btn" data-act="remove" aria-label="Remover ${esc(p.name || "pessoa " + (i + 1))}">×</button>
+    </div>
+    <div class="p-extra">
+      <label for="p-${id}-via">Recebe o link no celular de<select id="p-${id}-via" data-f="via">${viaOptions(p)}</select></label>
+      ${p.via && byId(p.via)
+        ? `<p class="via-note">Sem celular próprio: o link vai para o WhatsApp de ${esc(byId(p.via).name || "outra pessoa")}.</p>`
+        : `<label for="p-${id}-phone">WhatsApp<input id="p-${id}-phone" data-f="phone" inputmode="tel" value="${esc(p.phone)}" placeholder="(11) 98765-4321"></label>`}
+      <label for="p-${id}-group">Núcleo <small>mesmo núcleo não se tira</small><input id="p-${id}-group" data-f="group" list="groups" value="${esc(p.group)}" placeholder="Ex.: Ana e Pedro"></label>
+      <label class="wide" for="p-${id}-hint">Dica de presente <small>aparece para quem tirar</small><input id="p-${id}-hint" data-f="hint" value="${esc(p.hint)}" placeholder="Ex.: gosta de chocolate, calça 38"></label>
+    </div>
+  </div>`;
+}
+function viaOptions(p){
+  const others = state.people.filter(x => x !== p && x.name.trim());
+  return `<option value="">Próprio celular</option>` + others.map(x => `<option value="${x.id}" ${p.via === x.id ? "selected" : ""}>${esc(x.name.trim())}</option>`).join("");
+}
+function groupOptions(){
+  const set = new Set(state.people.map(p => (p.group || "").trim()).filter(Boolean));
+  return [...set].map(g => `<option value="${esc(g)}"></option>`).join("");
+}
+function peopleEditor(){
+  return `
+    <p class="small muted">Casais ou irmãos que não devem se tirar: escreva o mesmo <b>núcleo</b> para eles. O WhatsApp é opcional e serve para abrir a conversa certa na hora de enviar. Quem não tem celular pode <b>receber o link no celular de</b> outra pessoa.</p>
+    <div class="people" id="people">${state.people.map(personRow).join("")}</div>
+    <datalist id="groups">${groupOptions()}</datalist>
+    <form class="row" id="add-form">
+      <input class="grow" id="add-name" placeholder="Nome de mais alguém" aria-label="Nome da nova pessoa" autocomplete="off">
+      <button type="submit" class="btn primary">Adicionar</button>
+    </form>
+    <details>
+      <summary>Colar vários nomes de uma vez</summary>
+      <div>
+        <p class="small muted">Um por linha. Se quiser, coloque o telefone depois do nome. Ex.: <i>Maria 11 98765-4321</i></p>
+        <label for="paste">Lista<textarea id="paste" rows="5" placeholder="Maria 11 98765-4321&#10;João&#10;Tia Rosa 21 99876-5432"></textarea></label>
+        <button type="button" class="btn ghost" data-act="paste">Adicionar todos</button>
+      </div>
+    </details>`;
+}
+function peopleSummary(){
+  const ids = state.draw.people;
+  const list = ids.map(id => state.people.find(p => p.id === id)).filter(Boolean);
+  return `<div class="summary-list">${list.map(p => `<span class="chip">${esc(p.name)}</span>`).join("")}</div>
+    <div class="row"><button type="button" class="btn ghost" data-act="edit">Editar evento ou lista</button></div>`;
+}
+function drawPanel(){
+  const c = checks();
+  const blocked = c.some(x => x.k === "bad");
+  return `<ul class="checks">${c.map(x => `<li><span class="dot ${x.k === "bad" ? "bad" : x.k === "warn" ? "warn" : ""}"></span><span>${esc(x.t)}</span></li>`).join("")}</ul>
+    <p class="error" id="draw-err" hidden></p>
+    <button type="button" class="btn primary big" data-act="draw" ${blocked ? "disabled" : ""}>Sortear agora</button>
+    <p class="small muted">O sorteio é feito aqui no aparelho e ninguém vê o resultado, nem você. Sempre que possível, ele forma uma corrente única, então ninguém troca presente só entre si.</p>`;
+}
+function drawDone(){
+  return `<p>Pronto! Cada participante tem um link pessoal. Agora é só enviar no passo 4.</p>
+    <div class="row">
+      <button type="button" class="btn ghost" data-act="preview">Ver como a pessoa recebe</button>
+    </div>`;
+}
+function sendSection(){
+  const ids = state.draw.people;
+  const list = ids.map(id => state.people.find(p => p.id === id)).filter(Boolean);
+  const sent = list.filter(p => state.sent[p.id]).length;
+  const pct = list.length ? Math.round(sent / list.length * 100) : 0;
+  return `<section class="card" aria-labelledby="h-send" id="send">
+    <div class="step-head"><span class="num">4</span><h2 id="h-send">Envie para cada um</h2><span class="chip ${sent === list.length ? "ok" : "wait"}">${sent} de ${list.length} enviados</span></div>
+    <div class="progress" aria-hidden="true"><i style="width:${pct}%"></i></div>
+    <p class="small muted">Toque em <b>WhatsApp</b> em cada nome. A mensagem já vai pronta com o link. Se a pessoa não tem número cadastrado, o WhatsApp pede para você escolher o contato.</p>
+    <ul class="send-list" id="send-list">${sharedGroups(list).map(g => g.length > 1 ? sharedItem(g) : sendItem(g[0])).join("")}</ul>
+    <details>
+      <summary>Aviso para o grupo da família</summary>
+      <div>
+        <p class="small muted">Uma mensagem geral, sem resultado nenhum, para mandar no grupo avisando que os links estão chegando.</p>
+        <button type="button" class="btn ghost" data-act="copy-group">Copiar aviso para o grupo</button>
+      </div>
+    </details>
+    <details>
+      <summary>Link da página</summary>
+      <div>
+        <p class="small muted">Os links pessoais começam com este endereço. Só troque se você publicou a página em outro lugar.</p>
+        <label for="base-url">Endereço<input id="base-url" value="${esc(pageUrl())}" inputmode="url" autocomplete="off"></label>
+      </div>
+    </details>
+    <details>
+      <summary>Mais opções</summary>
+      <div>
+        <button type="button" class="btn danger" data-act="reveal-all">Ver quem tirou quem</button>
+        <button type="button" class="btn danger" data-act="redo">Refazer o sorteio</button>
+      </div>
+    </details>
+  </section>`;
+}
+function sharedItem(g){
+  const h = host(g[0]);
+  const allSent = g.every(p => state.sent[p.id]);
+  return `<li class="shared">
+    <div class="shared-head"><b>Mesmo celular</b><span class="phone">${h.phone ? esc(h.phone) + " · " : ""}${esc(h.name)}</span></div>
+    <p class="small muted">${esc(g.map(p => p.name.trim()).join(", "))} recebem no mesmo número. Mande tudo numa mensagem só, ou um de cada vez.</p>
+    <a class="btn wa" href="${esc(waMultiLink(g))}" target="_blank" rel="noopener" data-act="wa-multi" data-ids="${g.map(p => p.id).join(",")}">${allSent ? "Enviar de novo" : "Enviar"} os ${g.length} links numa mensagem</a>
+    <ul class="send-list">${g.map(sendItem).join("")}</ul>
+  </li>`;
+}
+function sendItem(p){
+  const done = !!state.sent[p.id];
+  return `<li class="send-item ${done ? "done" : ""}" data-id="${p.id}">
+    <div class="send-top"><div><b>${esc(p.name)}</b>${phoneLabel(p) ? `<div class="phone">${esc(phoneLabel(p))}</div>` : ""}</div><span class="chip ${done ? "ok" : "wait"}">${done ? "Enviado" : "Falta enviar"}</span></div>
+    <div class="send-actions">
+      <a class="btn wa" href="${esc(waLink(p))}" target="_blank" rel="noopener" data-act="wa">Enviar no WhatsApp</a>
+      <button type="button" class="btn ghost" data-act="copy-msg">Copiar mensagem</button>
+    </div>
+    <button type="button" class="linkbtn" data-act="toggle-sent">${done ? "Desmarcar envio" : "Já enviei por outro meio"}</button>
+  </li>`;
+}
+function refreshDrawPanel(){
+  const el = document.getElementById("draw-panel");
+  if (el && !state.draw) el.innerHTML = drawPanel();
+  const c = document.getElementById("pp-count");
+  if (c) c.textContent = `${named().length} pessoas`;
+}
+
+/* ---------- Ações ---------- */
+function addPeople(entries){
+  if (!entries.length) return;
+  entries.forEach(e => state.people.push({ id: uid(), name: e.name, phone: e.phone || "", group: "", hint: "" }));
+  save(); render();
+}
+function parsePaste(text){
+  return text.split(/\n+/).map(l => l.trim()).filter(Boolean).map(l => {
+    const m = l.match(/(\+?\d[\d\s().-]{7,}\d)/);
+    let phone = "", name = l;
+    if (m){ phone = m[1].trim(); name = l.replace(m[1], ""); }
+    name = name.replace(/^[\s\-–•*\d.)]+(?=\D)/, "").replace(/[\s,;:\-–]+$/, "").trim();
+    return { name, phone };
+  }).filter(e => e.name);
+}
+function buildCodes(drawId, ev, ppl, pairs){
+  const codes = {};
+  ppl.forEach(p => {
+    const r = ppl.find(x => x.id === pairs[p.id]);
+    codes[p.id] = makeCode([drawId, (ev.name || "").trim(), ev.date, ev.time, (ev.place || "").trim(), ev.budget, (ev.notes || "").trim(), p.name.trim(), r.name.trim(), (r.hint || "").trim()]);
+  });
+  return codes;
+}
+
+/* ---------- Convite para organizar junto ---------- */
+function inviteCode(from){
+  const ppl = state.people;
+  const idx = id => ppl.findIndex(p => p.id === id);
+  const o = { v: 1, from, ev: state.event, pp: ppl.map(p => [p.name, p.phone, p.group, p.hint, p.via ? idx(p.via) : -1]), url: state.baseUrl || "" };
+  if (state.draw){
+    const d = state.draw;
+    o.d = { id: d.id, at: d.at, ev: d.event, pp: d.people.map(idx), pr: d.people.map(id => idx(d.pairs[id])), s: d.people.map(id => state.sent[id] ? 1 : 0) };
+  }
+  return "org-" + pack(new TextEncoder().encode(JSON.stringify(o)), 2);
+}
+function readInvite(h){
+  const m = String(h || "").match(/org-([a-z0-9]{8,})/i);
+  if (!m) return null;
+  const data = unpack(m[1].toLowerCase(), 2);
+  if (!data) return null;
+  try {
+    const o = JSON.parse(new TextDecoder().decode(data));
+    if (!o || !o.ev || !Array.isArray(o.pp)) return null;
+    if (o.d && (!Array.isArray(o.d.pp) || o.d.pp.some(i => !o.pp[i]) || o.d.pr.some(i => !o.pp[i]))) return null;
+    return o;
+  } catch(e){ return null; }
+}
+function applyInvite(o){
+  const people = o.pp.map(a => ({ id: uid(), name: a[0] || "", phone: a[1] || "", group: a[2] || "", hint: a[3] || "", via: "" }));
+  o.pp.forEach((a, i) => { if (typeof a[4] === "number" && people[a[4]] && a[4] !== i) people[i].via = people[a[4]].id; });
+  let draw = null; const sent = {};
+  if (o.d){
+    const list = o.d.pp.map(i => people[i]);
+    const pairs = {};
+    o.d.pp.forEach((pi, k) => { pairs[people[pi].id] = people[o.d.pr[k]].id; if (o.d.s && o.d.s[k]) sent[people[pi].id] = true; });
+    draw = { id: o.d.id, at: o.d.at, pairs, codes: buildCodes(o.d.id, o.d.ev, list, pairs), people: list.map(p => p.id), event: o.d.ev };
+  }
+  state = { example: false, event: o.ev, people, draw, sent, baseUrl: o.url || "", me: state.me || "", syncedAt: state.syncedAt };
+  save(); storeLocal();
+}
+function inviteMessage(from){
+  const name = (state.draw ? state.draw.event.name : state.event.name) || "da família";
+  return [
+    `Oi! Quero sua ajuda para organizar o amigo oculto *${name}*.`,
+    "",
+    "Toque no link para receber a lista no seu celular" + (state.draw ? " e me ajudar a enviar os links do sorteio:" : ":"),
+    `${pageUrl()}#${inviteCode(from)}`,
+    "",
+    "⚠️ Este link é só para quem organiza. Não repasse para a família."
+  ].join("\n");
+}
+function openInvite(){
+  const meEl = document.getElementById("me");
+  const from = (meEl ? meEl.value : state.me || "").trim();
+  if (!from){
+    const err = document.getElementById("me-err");
+    if (err) err.hidden = false;
+    if (meEl) meEl.focus();
+    return;
+  }
+  const msg = inviteMessage(from);
+  modal("Convidar para organizar", `
+    <p>A outra pessoa recebe uma cópia da lista${state.draw ? ", do sorteio e de quem já recebeu o link" : ""} no celular dela.</p>
+    ${state.draw ? `<p class="small muted">Com essa cópia ela também consegue ver quem tirou quem. Convide só quem não participa ou é de total confiança.</p>` : ""}
+    <a class="btn wa big" href="${esc("https://wa.me/?text=" + encodeURIComponent(msg))}" target="_blank" rel="noopener">Enviar convite no WhatsApp</a>
+    <button type="button" class="btn ghost" id="copy-invite">Copiar convite</button>`,
+    [{ label: "Fechar" }]);
+  const cb = document.getElementById("copy-invite");
+  if (cb) cb.addEventListener("click", () => copy(msg, "Convite copiado"));
+}
+
+function doDraw(){
+  const ppl = named();
+  const btn = document.querySelector('[data-act="draw"]');
+  const err = document.getElementById("draw-err");
+  const pairs = solve(ppl);
+  if (!pairs){
+    err.hidden = false;
+    err.textContent = "Não dá para sortear com esses núcleos: há gente demais no mesmo núcleo. Divida um núcleo grande (por exemplo, um casal por núcleo) e tente de novo.";
+    return;
+  }
+  if (btn){ btn.disabled = true; btn.textContent = "Sorteando…"; }
+  const ev = { ...state.event };
+  const drawId = b32enc(randBytes(3)).slice(0, 4).toUpperCase();
+  const codes = buildCodes(drawId, ev, ppl, pairs);
+  setTimeout(() => {
+    state.draw = { id: drawId, at: Date.now(), pairs, codes, people: ppl.map(p => p.id), event: ev };
+    state.sent = {};
+    state.example = false;
+    save(); render();
+    const s = document.getElementById("send");
+    if (s) s.scrollIntoView({ behavior: "smooth", block: "start" });
+    toast("Sorteio feito!");
+  }, 700);
+}
+function confirmRedo(editAfter){
+  const anySent = Object.values(state.sent).some(Boolean);
+  const body = `<p>${editAfter ? "Para mudar o evento ou a lista, o sorteio atual é descartado e você sorteia de novo." : "Um novo sorteio troca todos os pares."}</p>
+    ${anySent ? `<p class="error">Você já enviou alguns links. Eles continuam abrindo o resultado antigo (sorteio nº ${esc(state.draw.id)}). Avise a família para usar só o link novo; o número do sorteio aparece no topo da página de cada um.</p>` : ""}`;
+  modal(editAfter ? "Editar e sortear de novo?" : "Refazer o sorteio?", body, [
+    { label: "Cancelar" },
+    { label: editAfter ? "Editar" : "Refazer", cls: "primary", run: () => {
+      state.draw = null; state.sent = {}; save(); render();
+      if (!editAfter) setTimeout(doDraw, 50);
+    } }
+  ]);
+}
+function revealAll(){
+  modal("Ver quem tirou quem?", `<p>Isso mostra o resultado completo. Use só se você não participa do sorteio, ou se precisar resolver algum problema.</p>`, [
+    { label: "Cancelar" },
+    { label: "Mostrar", cls: "danger", run: () => {
+      const byId = id => state.people.find(p => p.id === id);
+      const rows = state.draw.people.map(id => `<li><b>${esc(byId(id)?.name)}</b><span>tirou</span><b>${esc(byId(state.draw.pairs[id])?.name)}</b></li>`).join("");
+      modal(`Sorteio nº ${state.draw.id}`, `<ul class="pairs">${rows}</ul>`, [{ label: "Fechar", cls: "primary" }]);
+    } }
+  ]);
+}
+
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.dataset.ev){ state.event[t.dataset.ev] = t.value; save(); }
+  else if (t.dataset.f){
+    const id = t.closest(".person").dataset.id;
+    const p = state.people.find(x => x.id === id);
+    if (p){ p[t.dataset.f] = t.value; save(); }
+    if (t.dataset.f === "via"){ render(); return; }
+    if (t.dataset.f === "group"){ const dl = document.getElementById("groups"); if (dl) dl.innerHTML = groupOptions(); }
+    refreshDrawPanel();
+  } else if (t.id === "me"){
+    state.me = t.value; save();
+    const err = document.getElementById("me-err"); if (err && t.value.trim()) err.hidden = true;
+  } else if (t.id === "base-url"){
+    state.baseUrl = t.value; save();
+    document.querySelectorAll(".send-item").forEach(li => {
+      const p = state.people.find(x => x.id === li.dataset.id);
+      const a = li.querySelector("a.btn.wa"); if (p && a) a.href = waLink(p);
+    });
+    document.querySelectorAll('[data-act="wa-multi"]').forEach(a => {
+      const g = a.dataset.ids.split(",").map(byId).filter(Boolean);
+      if (g.length) a.href = waMultiLink(g);
+    });
+  }
+});
+document.addEventListener("change", e => {
+  const t = e.target;
+  if (t.dataset && t.dataset.f === "name"){
+    document.querySelectorAll('select[data-f="via"]').forEach(sel => {
+      const p = byId(sel.closest(".person").dataset.id);
+      if (p) sel.innerHTML = viaOptions(p);
+    });
+    document.querySelectorAll(".via-note").forEach(n => {
+      const p = byId(n.closest(".person").dataset.id);
+      const h = p && byId(p.via);
+      if (h) n.textContent = `Sem celular próprio: o link vai para o WhatsApp de ${h.name || "outra pessoa"}.`;
+    });
+  }
+});
+document.addEventListener("submit", e => {
+  if (e.target.id === "add-form"){
+    e.preventDefault();
+    const inp = document.getElementById("add-name");
+    const name = inp.value.trim();
+    if (!name) return;
+    addPeople([{ name }]);
+    const again = document.getElementById("add-name");
+    if (again) again.focus();
+  }
+});
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]");
+  if (!el) return;
+  const act = el.dataset.act;
+  const item = el.closest("[data-id]");
+  const person = item ? state.people.find(p => p.id === item.dataset.id) : null;
+  switch (act){
+    case "clear-example": state = blank(); save(); render(); break;
+    case "remove":
+      state.people = state.people.filter(p => p !== person);
+      state.people.forEach(x => { if (person && x.via === person.id) x.via = ""; });
+      save(); render(); break;
+    case "wa-multi":
+      el.dataset.ids.split(",").forEach(id => { state.sent[id] = true; });
+      save(); setTimeout(render, 400);
+      break;
+    case "paste": {
+      const ta = document.getElementById("paste");
+      addPeople(parsePaste(ta.value));
+      break;
+    }
+    case "draw": doDraw(); break;
+    case "edit": confirmRedo(true); break;
+    case "redo": confirmRedo(false); break;
+    case "reveal-all": revealAll(); break;
+    case "invite": openInvite(); break;
+    case "join": {
+      const o = readInvite(location.hash);
+      if (o){ applyInvite(o); toast("Pronto! Agora você organiza junto."); }
+      location.hash = "";
+      break;
+    }
+    case "go-home": location.hash = ""; break;
+    case "wa":
+      if (person){ state.sent[person.id] = true; save(); setTimeout(render, 400); }
+      break;
+    case "copy-msg":
+      if (person){ copy(personalMessage(person), `Mensagem de ${person.name} copiada`); state.sent[person.id] = true; save(); setTimeout(render, 400); }
+      break;
+    case "toggle-sent":
+      if (person){ state.sent[person.id] = !state.sent[person.id]; save(); render(); }
+      break;
+    case "copy-group": copy(groupMessage(), "Aviso copiado"); break;
+    case "preview": {
+      const ev = state.draw.event;
+      location.hash = makeCode([state.draw.id, ev.name, ev.date, ev.time, ev.place, ev.budget, ev.notes, "Fulano (exemplo)", "Pessoa sorteada", "Aqui aparece a dica de presente, se houver"]);
+      break;
+    }
+    case "open-code": {
+      const raw = document.getElementById("code-in").value;
+      const code = findCode(raw);
+      const inv = String(raw || "").match(/org-[a-z0-9]{8,}/i);
+      if (code && readCode(code)) location.hash = code;
+      else if (inv && readInvite(inv[0])) location.hash = inv[0].toLowerCase();
+      else document.getElementById("code-err").hidden = false;
+      break;
+    }
+  }
+});
+
+/* ---------- Tela de quem recebe o link ---------- */
+function renderReveal(d){
+  const isPreview = d.giver === "Fulano (exemplo)";
+  const facts = [["Quando", [fmtDate(d.date, true), d.time ? d.time.replace(":", "h") : ""].filter(Boolean).join(", às ")], ["Onde", d.place], ["Valor", d.budget ? "até " + fmtMoney(d.budget) : ""], ["Recado", d.notes]].filter(r => r[1]);
+  app.innerHTML = `
+    <header class="hero">
+      <div class="ribbon" aria-hidden="true"></div>
+      <p class="eyebrow">Amigo Oculto · sorteio nº ${esc(d.drawId)}</p>
+      <h1>${esc(d.name || "Amigo Oculto")}</h1>
+    </header>
+    ${isPreview ? `<div class="banner"><p><b>Pré-visualização.</b> É assim que cada pessoa vê o próprio link, com os nomes de verdade.</p><button type="button" class="btn" id="back">Voltar ao sorteio</button></div>` : ""}
+    <section class="card reveal-card" id="step-who">
+      <div class="who">
+        <p class="muted">Este link é de</p>
+        <p class="who-name">${esc(d.giver)}</p>
+        <p id="who-q">É você que está com o celular agora?</p>
+        <p id="who-pass" hidden>Então entregue o celular para <b>${esc(d.giver)}</b> abrir. Sem espiar, combinado?</p>
+        <div class="row" id="who-btns">
+          <button type="button" class="btn primary" id="who-yes">Sim, sou ${esc(d.giver)}</button>
+          <button type="button" class="btn ghost" id="who-no">Não sou</button>
+        </div>
+        <button type="button" class="btn primary" id="who-now" hidden>Agora é ${esc(d.giver)} aqui</button>
+      </div>
+    </section>
+    <section class="card reveal-card" id="step-gift" hidden>
+      <p class="hello">Olá, ${esc(d.giver)}!</p>
+      <p class="muted">Este link é só seu. Antes de abrir, veja se ninguém está espiando a sua tela.</p>
+      <div class="gift" id="gift" aria-hidden="true"><div class="box"></div><div class="lid"><div class="bow"></div></div></div>
+      <button type="button" class="btn primary big" id="open">Abrir e ver quem eu tirei</button>
+      <div class="result" id="result" hidden>
+        <p class="label">Você tirou</p>
+        <p class="drawn">${esc(d.receiver)}</p>
+        ${d.hint ? `<p class="hint"><b>Dica de presente:</b> ${esc(d.hint)}</p>` : ""}
+        <button type="button" class="linkbtn" id="hide">Esconder de novo</button>
+      </div>
+      <p class="small muted">Não é ${esc(d.giver)}? Não abra: entregue o celular para a pessoa certa.</p>
+    </section>
+    ${facts.length ? `<section class="card"><h2>Combinados</h2><dl class="facts">${facts.map(r => `<dt>${r[0]}</dt><dd class="${r[0] === "Recado" ? "notes" : ""}">${esc(r[1])}</dd>`).join("")}</dl></section>` : ""}
+    <footer>
+      <p>Guarde segredo! Você pode abrir este link de novo quando quiser.</p>
+      <p>Se receber um link novo com outro número de sorteio, vale o mais recente.</p>
+      ${isPreview ? "" : `<p><a href="#" id="org">Organizar um amigo oculto</a></p>`}
+    </footer>`;
+  const stepWho = document.getElementById("step-who"), stepGift = document.getElementById("step-gift");
+  const goGift = () => { stepWho.hidden = true; stepGift.hidden = false; document.getElementById("open").focus(); };
+  document.getElementById("who-yes").addEventListener("click", goGift);
+  document.getElementById("who-now").addEventListener("click", goGift);
+  document.getElementById("who-no").addEventListener("click", () => {
+    document.getElementById("who-q").hidden = true;
+    document.getElementById("who-btns").hidden = true;
+    document.getElementById("who-pass").hidden = false;
+    document.getElementById("who-now").hidden = false;
+  });
+  const gift = document.getElementById("gift"), open = document.getElementById("open"), res = document.getElementById("result");
+  open.addEventListener("click", () => {
+    gift.classList.add("open"); open.hidden = true;
+    setTimeout(() => { res.hidden = false; gift.style.display = "none"; }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650);
+  });
+  document.getElementById("hide").addEventListener("click", () => {
+    res.hidden = true; gift.style.display = ""; gift.classList.remove("open"); open.hidden = false;
+  });
+  const back = document.getElementById("back");
+  if (back) back.addEventListener("click", () => { location.hash = ""; });
+}
+function renderInvalid(){
+  app.innerHTML = `
+    <header class="hero"><div class="ribbon" aria-hidden="true"></div><p class="eyebrow">Amigo Oculto</p><h1>Este link está incompleto</h1></header>
+    <section class="card">
+      <p>O link pode ter sido cortado ao copiar. Peça para quem organizou enviar de novo, ou cole aqui a mensagem inteira que você recebeu.</p>
+      <label for="code-in">Mensagem ou link<input id="code-in" autocomplete="off"></label>
+      <button type="button" class="btn primary" data-act="open-code">Ver meu resultado</button>
+      <p class="error" id="code-err" hidden>Ainda não encontrei um código válido. Confira se copiou a mensagem inteira.</p>
+      <p class="small"><a href="#">Ir para a página de organizar</a></p>
+    </section>`;
+}
+
+function renderInvite(o){
+  const evName = (o.d ? o.d.ev.name : o.ev.name) || "Amigo Oculto";
+  const total = o.d ? o.d.pp.length : o.pp.filter(a => (a[0] || "").trim()).length;
+  const sentN = o.d && o.d.s ? o.d.s.filter(Boolean).length : 0;
+  const hasLocal = !state.example && state.people.some(p => p.name.trim());
+  app.innerHTML = `
+    <header class="hero">
+      <div class="ribbon" aria-hidden="true"></div>
+      <p class="eyebrow">Convite para organizar</p>
+      <h1>${esc(evName)}</h1>
+    </header>
+    <section class="card">
+      <p class="hello">${esc(o.from || "Alguém")} quer organizar o amigo oculto com você.</p>
+      <dl class="facts">
+        <dt>Participantes</dt><dd>${total} pessoas</dd>
+        <dt>Sorteio</dt><dd>${o.d ? `Feito, nº ${esc(o.d.id)} · ${sentN} de ${total} links enviados` : "Ainda não foi feito"}</dd>
+      </dl>
+      ${hasLocal ? `<p class="error">Este celular já tem um amigo oculto salvo (${esc(state.event.name || "sem nome")}). Ao entrar, ele é substituído por este.</p>` : ""}
+      <button type="button" class="btn primary big" data-act="join">Entrar na organização</button>
+      <button type="button" class="btn ghost" data-act="go-home">Agora não</button>
+      <p class="small muted">Cada celular guarda a sua cópia. Combinem quem envia o link para quem, porque a marcação de "enviado" não passa sozinha de um celular para o outro.</p>
+    </section>`;
+}
+
+/* ---------- Rota ---------- */
+function render(){
+  const h = location.hash.replace(/^#/, "");
+  if (/^ao-/i.test(h)){
+    const d = readCode(h);
+    d ? renderReveal(d) : renderInvalid();
+  } else if (/^org-/i.test(h)){
+    const o = readInvite(h);
+    o ? renderInvite(o) : renderInvalid();
+  } else {
+    renderOrganizer();
+  }
+}
+window.addEventListener("hashchange", () => { render(); window.scrollTo(0, 0); });
+render();
+connectSync();
+</script>
+</body>
+</html>

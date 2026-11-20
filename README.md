@@ -1,0 +1,23 @@
+# Amigo Oculto da Família
+
+Página de sorteio de amigo oculto para mandar pelo WhatsApp. Cada pessoa recebe um link que mostra só quem ela tirou, e nem quem organiza vê o resultado.
+
+## O que a página faz
+
+- Cadastro do evento: nome, data, horário, local, valor do presente e um recado.
+- Lista de participantes com WhatsApp, **núcleo** (quem tem o mesmo núcleo não se tira, por exemplo casais) e dica de presente.
+- Quem não tem celular pode receber o link no celular de outra pessoa. Quem divide o mesmo número recebe os links juntos numa mensagem só.
+- O sorteio forma uma corrente única sempre que dá, para ninguém trocar presente só entre si.
+- Um botão por pessoa abre o WhatsApp com a mensagem pronta, e a página marca quem já recebeu.
+- Convite para outra pessoa organizar junto.
+- Antes de revelar, o link pergunta "Este link é de quem?", para quem empresta o celular não ver o resultado sem querer.
+
+## Como funciona
+
+Tudo fica num único `index.html`, sem servidor. O resultado de cada pessoa vai embaralhado dentro do próprio link (depois do `#`). Isso basta para não estragar a surpresa, mas não é criptografia.
+
+Quando a página roda como artefato do Claude, a lista do organizador fica salva na conta dele, então aparece igual no celular e no computador. Em qualquer outro lugar, ela fica salva no navegador.
+
+## Usar em outro endereço
+
+A página pode ser publicada em qualquer hospedagem estática, como o GitHub Pages. Depois de publicar, coloque o novo endereço em **Envie para cada um → Link da página**, para os links pessoais apontarem para lá.
