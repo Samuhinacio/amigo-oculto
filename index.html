@@ -587,7 +587,7 @@ function checks(){
   list.forEach(p => { const k = p.name.trim().toLowerCase(); if (seen[k]) dups.add(p.name.trim()); seen[k] = true; });
   if (dups.size) out.push({ k: "bad", t: `Nome repetido: ${[...dups].join(", ")}. Use sobrenome ou apelido para diferenciar.` });
   sharedGroups(list).filter(g => g.length > 1).forEach(g => {
-    out.push({ k: "ok", t: `Mesmo celular: ${g.map(p => p.name.trim()).join(" e ")}. Cada um recebe o próprio link.` });
+    out.push({ k: "ok", t: `Mesmo celular: ${joinNames(g.map(p => p.name.trim()))}. Um link só para todos, e cada um confirma o próprio nome.` });
   });
   const noPhone = list.filter(p => !effPhone(p)).length;
   if (noPhone && list.length) out.push({ k: "warn", t: noPhone === list.length ? "Ninguém tem WhatsApp cadastrado. Tudo bem: na hora de enviar, você escolhe o contato no WhatsApp." : `${noPhone} sem WhatsApp cadastrado. Na hora de enviar, você escolhe o contato no WhatsApp.` });
@@ -879,10 +879,10 @@ function addPeople(entries){
 }
 function parsePaste(text){
   return text.split(/\n+/).map(l => l.trim()).filter(Boolean).map(l => {
-    const m = l.match(/(\+?\d[\d\s().-]{7,}\d)/);
+    const m = l.match(/(\+?\(?\d[\d\s().-]{7,}\d)/);
     let phone = "", name = l;
     if (m){ phone = m[1].trim(); name = l.replace(m[1], ""); }
-    name = name.replace(/^[\s\-–•*\d.)]+(?=\D)/, "").replace(/[\s,;:\-–]+$/, "").trim();
+    name = name.replace(/^[\s\-–•*\d.)]+(?=\D)/, "").replace(/[\s,;:\-–(]+$/, "").trim();
     return { name, phone };
   }).filter(e => e.name);
 }
