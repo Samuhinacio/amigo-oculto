@@ -11,7 +11,7 @@ Página de sorteio de amigo oculto para mandar pelo WhatsApp. Cada pessoa recebe
 - Um botão por pessoa abre o WhatsApp com a mensagem pronta, e a página marca quem já recebeu.
 - Convite para outra pessoa organizar junto.
 - Lista de quem tirou quem para o organizador que não participa, escondida até ele pedir.
-- Quem recebe o link vê só uma pergunta grande, "Você é Fulano?", com os botões Sim e Não. Quando o celular é de mais de uma pessoa, vai um link só, com o botão "Ver próxima pessoa".
+- Quem recebe o link vê só uma pergunta grande, "Você é Fulano?", com os botões Sim e Não. Quando o celular é de mais de uma pessoa, vai um link só, com o botão "Ver próxima pessoa". Depois do Sim, a página pergunta de novo "Tem certeza que é você?" e avisa que o nome aparece uma vez só. A segunda leitura é bloqueada no mesmo celular e navegador, mas não em outro aparelho.
 
 ## Como funciona
 

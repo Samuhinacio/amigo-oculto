@@ -186,6 +186,9 @@ footer{font-size:14px;color:#b8c7c0;display:flex;flex-direction:column;gap:6px;p
 .btn.no:hover{border-color:var(--muted)}
 .btn.next{background:var(--gold);color:var(--pine)}
 .pop{animation:rise .6s ease both}
+.small-name{font-size:clamp(30px,8vw,40px)}
+.alert{width:100%;background:#fff3d6;border:2px solid var(--gold);border-radius:14px;padding:14px 16px;text-align:left;font-size:18px;display:flex;flex-direction:column;gap:4px}
+.alert-title{font-weight:800;color:#7a5a12;text-transform:uppercase;letter-spacing:.06em;font-size:15px}
 .big-facts{font-size:17px;text-align:left;width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
 
 .modal-bg{position:fixed;inset:0;background:rgba(6,20,16,.6);display:grid;place-items:center;padding:16px;z-index:50}
@@ -600,7 +603,7 @@ function personalMessage(p){
     "",
     ...(host(p) !== p
       ? [`Oi! Este link é de *${p.name.trim()}*, que vai usar este celular. Entregue o celular para ${p.name.trim()} abrir, sem espiar 🤫`]
-      : [`Oi, ${p.name.trim()}! O sorteio foi feito.`, "Toque no link para ver quem você tirou. O link é só seu, não repasse:"]),
+      : [`Oi, ${p.name.trim()}! O sorteio foi feito.`, "Toque no link para ver quem você tirou. O link é só seu, não repasse.", "⚠️ O nome aparece *só uma vez*, leia com atenção:"]),
     `${pageUrl()}#${state.draw.codes[p.id]}`,
     ""
   ];
@@ -637,6 +640,7 @@ function multiMessage(g){
     "",
     `Oi! O sorteio foi feito. Este link é para ${joinNames(g.map(p => "*" + p.name.trim() + "*"))}, que usam este celular.`,
     "Toque no link: cada um confirma o próprio nome e vê quem tirou. Sem espiar o dos outros 🤫",
+    "⚠️ O nome aparece *só uma vez* para cada pessoa, leia com atenção:",
     `${pageUrl()}#${multiCode(g)}`,
     ""
   ];
@@ -1147,6 +1151,12 @@ document.addEventListener("click", e => {
 });
 
 /* ---------- Tela de quem recebe o link ---------- */
+const SEEN = "amigo-oculto-visto";
+function seenKey(d, p){ return (d.drawId || "") + "|" + String(p.giver || "").trim().toLowerCase(); }
+function wasSeen(d, p){ try { return !!(JSON.parse(localStorage.getItem(SEEN) || "{}")[seenKey(d, p)]); } catch(e){ return false; } }
+function markSeen(d, p){
+  try { const m = JSON.parse(localStorage.getItem(SEEN) || "{}"); m[seenKey(d, p)] = Date.now(); localStorage.setItem(SEEN, JSON.stringify(m)); } catch(e){}
+}
 function renderReveal(d){
   const isPreview = d.people.some(p => p.giver === "Fulano (exemplo)");
   const many = d.people.length > 1;
@@ -1164,7 +1174,9 @@ function renderReveal(d){
       <section class="card simple" aria-live="polite">${inner}</section>`;
     app.querySelectorAll("[data-go]").forEach(btn => btn.addEventListener("click", () => {
       const go = btn.dataset.go;
-      if (go === "show") show();
+      if (go === "yes") (!isPreview && wasSeen(d, d.people[i])) ? already() : confirmMe();
+      else if (go === "show") (!isPreview && wasSeen(d, d.people[i])) ? already() : show();
+      else if (go === "done") done();
       else if (go === "notme") notMe();
       else if (go === "next"){ i = (i + 1) % d.people.length; ask(); }
       else ask();
@@ -1182,10 +1194,41 @@ function renderReveal(d){
       <p class="q-label">Você é</p>
       <p class="q-name">${esc(p.giver)}?</p>
       <div class="big-btns">
-        <button type="button" class="btn huge yes" data-go="show">Sim, sou eu</button>
+        <button type="button" class="btn huge yes" data-go="yes">Sim, sou eu</button>
         <button type="button" class="btn huge no" data-go="notme">Não</button>
         ${nextBtn("Ver próxima pessoa →")}
       </div>`);
+  }
+  function confirmMe(){
+    const p = d.people[i];
+    shell(`
+      <p class="q-label">Tem certeza que é você,</p>
+      <p class="q-name">${esc(p.giver)}?</p>
+      <div class="alert" role="alert">
+        <p class="alert-title">Atenção</p>
+        <p>O nome do seu amigo oculto vai aparecer <b>só uma vez</b>. Leia com calma. Depois que fechar, não dá para ver de novo neste celular.</p>
+      </div>
+      <div class="big-btns">
+        <button type="button" class="btn huge yes" data-go="show">Sim, tenho certeza</button>
+        <button type="button" class="btn huge no" data-go="notme">Não sou eu</button>
+      </div>`);
+  }
+  function already(){
+    const p = d.people[i];
+    shell(`
+      <p class="q-name small-name">${esc(p.giver)}, você já viu quem tirou.</p>
+      <p class="say">O nome aparece só uma vez. Se você esqueceu, fale com quem organizou o sorteio.</p>
+      <div class="big-btns">
+        ${nextBtn("Ver próxima pessoa →")}
+        <button type="button" class="btn huge no" data-go="ask">Voltar</button>
+      </div>`);
+  }
+  function done(){
+    const p = d.people[i];
+    shell(`
+      <p class="q-name small-name">Pronto, ${esc(p.giver)}!</p>
+      <p class="say">Agora é segredo. Bom amigo oculto!</p>
+      ${many ? `<div class="big-btns">${nextBtn("Passar para a próxima pessoa →")}</div>` : ""}`);
   }
   function notMe(){
     const p = d.people[i];
@@ -1194,22 +1237,22 @@ function renderReveal(d){
       <p class="q-name">${esc(p.giver)}</p>
       <p class="say">Entregue o celular para ${esc(p.giver)}, sem olhar.</p>
       <div class="big-btns">
-        <button type="button" class="btn huge yes" data-go="show">Agora sou eu, ${esc(p.giver)}</button>
+        <button type="button" class="btn huge yes" data-go="yes">Agora sou eu, ${esc(p.giver)}</button>
         ${nextBtn("Ver próxima pessoa →")}
         <button type="button" class="btn huge no" data-go="ask">Voltar</button>
       </div>`);
   }
   function show(){
     const p = d.people[i];
+    if (!isPreview) markSeen(d, p);
     shell(`
       <p class="q-label">${esc(p.giver)}, você tirou:</p>
       <p class="drawn pop">${esc(p.receiver)}</p>
       ${p.hint ? `<p class="hint"><b>Dica de presente:</b> ${esc(p.hint)}</p>` : ""}
       ${factsHtml}
-      <p class="say small-say">Guarde segredo! Você pode abrir este link de novo quando quiser.</p>
+      <p class="say small-say">Guarde segredo! Este nome não aparece de novo.</p>
       <div class="big-btns">
-        ${nextBtn("Passar para a próxima pessoa →")}
-        <button type="button" class="btn huge no" data-go="ask">Esconder</button>
+        <button type="button" class="btn huge no" data-go="done">Pronto, já guardei</button>
       </div>`);
   }
   ask();
