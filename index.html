@@ -571,7 +571,7 @@ function phoneLabel(p){
   if (h !== p) return `no celular de ${h.name || "outra pessoa"}${h.phone ? " · " + h.phone : ""}`;
   return p.phone || "";
 }
-function sendKey(p){ const ph = effPhone(p); return ph ? "tel:" + ph : "host:" + host(p).id; }
+function sendKey(p){ return "host:" + host(p).id; } // só junta quem foi marcado em "Recebe o link no celular de"
 function sharedGroups(list){
   const map = {}, groups = [];
   list.forEach(p => { const k = sendKey(p); if (!map[k]){ map[k] = []; groups.push(map[k]); } map[k].push(p); });
