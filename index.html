@@ -29,8 +29,9 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
+html{background:var(--pine);min-height:100%}
 body{background:var(--pine);color:var(--on-pine);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;
-  background-image:radial-gradient(circle at 15% 0%, rgba(227,182,76,.12), transparent 40%),radial-gradient(circle at 100% 30%, rgba(180,35,58,.18), transparent 45%);min-height:100%}
+  background-image:radial-gradient(circle at 15% 0%, rgba(227,182,76,.12), transparent 40%),radial-gradient(circle at 100% 30%, rgba(180,35,58,.18), transparent 45%);background-attachment:fixed;min-height:100vh}
 #app{max-width:720px;margin:0 auto;padding:28px 16px 64px;display:flex;flex-direction:column;gap:18px}
 h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.1}
 h1{font-size:clamp(34px,8vw,52px);font-weight:800;letter-spacing:-.02em}
@@ -169,6 +170,23 @@ footer{font-size:14px;color:#b8c7c0;display:flex;flex-direction:column;gap:6px;p
 .drawn{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,60px);color:var(--berry);line-height:1.05;text-wrap:balance}
 .hint{background:#fff6dd;border-radius:10px;padding:8px 12px;font-size:15px;max-width:40ch}
 .notes{white-space:pre-wrap}
+.mini-head{display:flex;flex-direction:column;gap:2px;padding:4px 2px}
+.mini-title{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.2}
+.simple{align-items:center;text-align:center;gap:14px;padding:30px 20px}
+.count{font-size:17px;font-weight:700;color:var(--berry)}
+.q-label{font-size:22px;color:var(--muted);font-weight:600}
+.q-name{font-family:var(--display);font-weight:800;font-size:clamp(40px,12vw,64px);line-height:1.05;text-wrap:balance;overflow-wrap:anywhere}
+.say{font-size:20px;max-width:30ch}
+.small-say{font-size:16px;color:var(--muted)}
+.big-btns{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:8px}
+.btn.huge{font-size:21px;min-height:64px;padding:16px 20px;width:100%;border-radius:16px}
+.btn.yes{background:var(--ok);color:#fff}
+.btn.yes:hover{background:#17623d}
+.btn.no{background:#fff;color:var(--ink);border:2px solid var(--line)}
+.btn.no:hover{border-color:var(--muted)}
+.btn.next{background:var(--gold);color:var(--pine)}
+.pop{animation:rise .6s ease both}
+.big-facts{font-size:17px;text-align:left;width:100%;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
 
 .modal-bg{position:fixed;inset:0;background:rgba(6,20,16,.6);display:grid;place-items:center;padding:16px;z-index:50}
 .modal{background:var(--paper);color:var(--ink);border-radius:18px;padding:22px;max-width:480px;width:100%;display:flex;flex-direction:column;gap:14px;max-height:90%;overflow:auto}
@@ -265,6 +283,22 @@ function unpack(str, ver){
 function makeCode(fields){
   const data = new TextEncoder().encode(fields.map(f => String(f ?? "").split(SEP).join(" ")).join(SEP));
   return "ao-" + pack(data, 1);
+}
+function makeMulti(drawId, ev, list){
+  const o = { d: drawId, e: [ev.name, ev.date, ev.time, ev.place, ev.budget, ev.notes].map(x => String(x ?? "").trim()), p: list };
+  return "am-" + pack(new TextEncoder().encode(JSON.stringify(o)), 3);
+}
+function readMulti(raw){
+  const m = String(raw || "").match(/am-([a-z0-9]{8,})/i);
+  if (!m) return null;
+  const data = unpack(m[1].toLowerCase(), 3);
+  if (!data) return null;
+  try {
+    const o = JSON.parse(new TextDecoder().decode(data));
+    if (!o || !Array.isArray(o.p) || !o.p.length) return null;
+    const [name, date, time, place, budget, notes] = o.e || [];
+    return { drawId: o.d, name, date, time, place, budget, notes, people: o.p.map(a => ({ giver: a[0] || "", receiver: a[1] || "", hint: a[2] || "" })) };
+  } catch(e){ return null; }
 }
 function findCode(raw){
   const m = String(raw || "").match(/ao-[a-z0-9]{8,}/i);
@@ -366,7 +400,7 @@ async function pushRemote(){
   if (sync.again){ sync.again = false; pushRemote(); }
 }
 function sig(s){ return JSON.stringify({ e: s.event, p: s.people, d: s.draw, x: s.sent }); }
-function inOrganizerView(){ return !/^#?(ao|org)-/i.test(location.hash); }
+function inOrganizerView(){ return !/^#?(ao|am|org)-/i.test(location.hash); }
 function rerender(){
   if (!inOrganizerView()) return;
   const ae = document.activeElement;
@@ -588,16 +622,24 @@ function groupMessage(){
   lines.push("", "Não conte para ninguém quem você tirou! 🤫");
   return lines.join("\n");
 }
+function joinNames(a){ return a.length > 1 ? a.slice(0, -1).join(", ") + " e " + a[a.length - 1] : (a[0] || ""); }
+function multiCode(g){
+  const list = g.map(p => {
+    const r = byId(state.draw.pairs[p.id]);
+    return [p.name.trim(), r ? r.name.trim() : "?", r ? (r.hint || "").trim() : ""];
+  });
+  return makeMulti(state.draw.id, state.draw.event, list);
+}
 function multiMessage(g){
   const ev = state.draw.event;
   const lines = [
     `🎁 *Amigo Oculto – ${ev.name || "Família"}*`,
     "",
-    `Oi! O sorteio foi feito. Aqui vão ${g.length} links, um para cada pessoa que vai usar este celular.`,
-    "Entregue o celular para cada um abrir *só o próprio link*, sem espiar o dos outros 🤫",
+    `Oi! O sorteio foi feito. Este link é para ${joinNames(g.map(p => "*" + p.name.trim() + "*"))}, que usam este celular.`,
+    "Toque no link: cada um confirma o próprio nome e vê quem tirou. Sem espiar o dos outros 🤫",
+    `${pageUrl()}#${multiCode(g)}`,
     ""
   ];
-  g.forEach(p => { lines.push(`👤 *${p.name.trim()}*`, `${pageUrl()}#${state.draw.codes[p.id]}`, ""); });
   const when = whenText(ev);
   if (when) lines.push(`📅 ${when}`);
   if (ev.place) lines.push(`📍 ${ev.place}`);
@@ -804,8 +846,8 @@ function sharedItem(g){
   const allSent = g.every(p => state.sent[p.id]);
   return `<li class="shared">
     <div class="shared-head"><b>Mesmo celular</b><span class="phone">${h.phone ? esc(h.phone) + " · " : ""}${esc(h.name)}</span></div>
-    <p class="small muted">${esc(g.map(p => p.name.trim()).join(", "))} recebem no mesmo número. Mande tudo numa mensagem só, ou um de cada vez.</p>
-    <a class="btn wa" href="${esc(waMultiLink(g))}" target="_blank" rel="noopener" data-act="wa-multi" data-ids="${g.map(p => p.id).join(",")}">${allSent ? "Enviar de novo" : "Enviar"} os ${g.length} links numa mensagem</a>
+    <p class="small muted">${esc(g.map(p => p.name.trim()).join(", "))} recebem no mesmo número. Mande um link só para todos (cada um confirma o próprio nome), ou um de cada vez.</p>
+    <a class="btn wa" href="${esc(waMultiLink(g))}" target="_blank" rel="noopener" data-act="wa-multi" data-ids="${g.map(p => p.id).join(",")}">${allSent ? "Enviar de novo" : "Enviar"} um link só para os ${g.length}</a>
     <ul class="send-list">${g.map(sendItem).join("")}</ul>
   </li>`;
 }
@@ -1094,7 +1136,9 @@ document.addEventListener("click", e => {
       const raw = document.getElementById("code-in").value;
       const code = findCode(raw);
       const inv = String(raw || "").match(/org-[a-z0-9]{8,}/i);
+      const multi = String(raw || "").match(/am-[a-z0-9]{8,}/i);
       if (code && readCode(code)) location.hash = code;
+      else if (multi && readMulti(multi[0])) location.hash = multi[0].toLowerCase();
       else if (inv && readInvite(inv[0])) location.hash = inv[0].toLowerCase();
       else document.getElementById("code-err").hidden = false;
       break;
@@ -1104,67 +1148,71 @@ document.addEventListener("click", e => {
 
 /* ---------- Tela de quem recebe o link ---------- */
 function renderReveal(d){
-  const isPreview = d.giver === "Fulano (exemplo)";
+  const isPreview = d.people.some(p => p.giver === "Fulano (exemplo)");
+  const many = d.people.length > 1;
+  let i = 0;
   const facts = [["Quando", [fmtDate(d.date, true), d.time ? d.time.replace(":", "h") : ""].filter(Boolean).join(", às ")], ["Onde", d.place], ["Valor", d.budget ? "até " + fmtMoney(d.budget) : ""], ["Recado", d.notes]].filter(r => r[1]);
-  app.innerHTML = `
-    <header class="hero">
-      <div class="ribbon" aria-hidden="true"></div>
-      <p class="eyebrow">Amigo Oculto · sorteio nº ${esc(d.drawId)}</p>
-      <h1>${esc(d.name || "Amigo Oculto")}</h1>
-    </header>
-    ${isPreview ? `<div class="banner"><p><b>Pré-visualização.</b> É assim que cada pessoa vê o próprio link, com os nomes de verdade.</p><button type="button" class="btn" id="back">Voltar ao sorteio</button></div>` : ""}
-    <section class="card reveal-card" id="step-who">
-      <div class="who">
-        <p class="muted">Este link é de</p>
-        <p class="who-name">${esc(d.giver)}</p>
-        <p id="who-q">É você que está com o celular agora?</p>
-        <p id="who-pass" hidden>Então entregue o celular para <b>${esc(d.giver)}</b> abrir. Sem espiar, combinado?</p>
-        <div class="row" id="who-btns">
-          <button type="button" class="btn primary" id="who-yes">Sim, sou ${esc(d.giver)}</button>
-          <button type="button" class="btn ghost" id="who-no">Não sou</button>
-        </div>
-        <button type="button" class="btn primary" id="who-now" hidden>Agora é ${esc(d.giver)} aqui</button>
-      </div>
-    </section>
-    <section class="card reveal-card" id="step-gift" hidden>
-      <p class="hello">Olá, ${esc(d.giver)}!</p>
-      <p class="muted">Este link é só seu. Antes de abrir, veja se ninguém está espiando a sua tela.</p>
-      <div class="gift" id="gift" aria-hidden="true"><div class="box"></div><div class="lid"><div class="bow"></div></div></div>
-      <button type="button" class="btn primary big" id="open">Abrir e ver quem eu tirei</button>
-      <div class="result" id="result" hidden>
-        <p class="label">Você tirou</p>
-        <p class="drawn">${esc(d.receiver)}</p>
-        ${d.hint ? `<p class="hint"><b>Dica de presente:</b> ${esc(d.hint)}</p>` : ""}
-        <button type="button" class="linkbtn" id="hide">Esconder de novo</button>
-      </div>
-      <p class="small muted">Não é ${esc(d.giver)}? Não abra: entregue o celular para a pessoa certa.</p>
-    </section>
-    ${facts.length ? `<section class="card"><h2>Combinados</h2><dl class="facts">${facts.map(r => `<dt>${r[0]}</dt><dd class="${r[0] === "Recado" ? "notes" : ""}">${esc(r[1])}</dd>`).join("")}</dl></section>` : ""}
-    <footer>
-      <p>Guarde segredo! Você pode abrir este link de novo quando quiser.</p>
-      <p>Se receber um link novo com outro número de sorteio, vale o mais recente.</p>
-      ${isPreview ? "" : `<p><a href="#" id="org">Organizar um amigo oculto</a></p>`}
-    </footer>`;
-  const stepWho = document.getElementById("step-who"), stepGift = document.getElementById("step-gift");
-  const goGift = () => { stepWho.hidden = true; stepGift.hidden = false; document.getElementById("open").focus(); };
-  document.getElementById("who-yes").addEventListener("click", goGift);
-  document.getElementById("who-now").addEventListener("click", goGift);
-  document.getElementById("who-no").addEventListener("click", () => {
-    document.getElementById("who-q").hidden = true;
-    document.getElementById("who-btns").hidden = true;
-    document.getElementById("who-pass").hidden = false;
-    document.getElementById("who-now").hidden = false;
-  });
-  const gift = document.getElementById("gift"), open = document.getElementById("open"), res = document.getElementById("result");
-  open.addEventListener("click", () => {
-    gift.classList.add("open"); open.hidden = true;
-    setTimeout(() => { res.hidden = false; gift.style.display = "none"; }, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 650);
-  });
-  document.getElementById("hide").addEventListener("click", () => {
-    res.hidden = true; gift.style.display = ""; gift.classList.remove("open"); open.hidden = false;
-  });
-  const back = document.getElementById("back");
-  if (back) back.addEventListener("click", () => { location.hash = ""; });
+  const factsHtml = facts.length ? `<dl class="facts big-facts">${facts.map(r => `<dt>${r[0]}</dt><dd class="${r[0] === "Recado" ? "notes" : ""}">${esc(r[1])}</dd>`).join("")}</dl>` : "";
+  const nextBtn = label => many ? `<button type="button" class="btn huge next" data-go="next">${label}</button>` : "";
+  function shell(inner){
+    app.innerHTML = `
+      <header class="mini-head">
+        <p class="eyebrow">Amigo Oculto · sorteio nº ${esc(d.drawId)}</p>
+        <p class="mini-title">${esc(d.name || "Amigo Oculto")}</p>
+      </header>
+      ${isPreview ? `<div class="banner"><p><b>Pré-visualização.</b> É assim que cada pessoa vê o próprio link.</p><button type="button" class="btn" id="back">Voltar ao sorteio</button></div>` : ""}
+      <section class="card simple" aria-live="polite">${inner}</section>`;
+    app.querySelectorAll("[data-go]").forEach(btn => btn.addEventListener("click", () => {
+      const go = btn.dataset.go;
+      if (go === "show") show();
+      else if (go === "notme") notMe();
+      else if (go === "next"){ i = (i + 1) % d.people.length; ask(); }
+      else ask();
+      window.scrollTo(0, 0);
+    }));
+    const back = document.getElementById("back");
+    if (back) back.addEventListener("click", () => { location.hash = ""; });
+    const first = app.querySelector(".simple .btn");
+    if (first) first.focus({ preventScroll: true });
+  }
+  function ask(){
+    const p = d.people[i];
+    shell(`
+      ${many ? `<p class="count">Pessoa ${i + 1} de ${d.people.length}</p>` : ""}
+      <p class="q-label">Você é</p>
+      <p class="q-name">${esc(p.giver)}?</p>
+      <div class="big-btns">
+        <button type="button" class="btn huge yes" data-go="show">Sim, sou eu</button>
+        <button type="button" class="btn huge no" data-go="notme">Não</button>
+        ${nextBtn("Ver próxima pessoa →")}
+      </div>`);
+  }
+  function notMe(){
+    const p = d.people[i];
+    shell(`
+      <p class="q-label">Este presente é de</p>
+      <p class="q-name">${esc(p.giver)}</p>
+      <p class="say">Entregue o celular para ${esc(p.giver)}, sem olhar.</p>
+      <div class="big-btns">
+        <button type="button" class="btn huge yes" data-go="show">Agora sou eu, ${esc(p.giver)}</button>
+        ${nextBtn("Ver próxima pessoa →")}
+        <button type="button" class="btn huge no" data-go="ask">Voltar</button>
+      </div>`);
+  }
+  function show(){
+    const p = d.people[i];
+    shell(`
+      <p class="q-label">${esc(p.giver)}, você tirou:</p>
+      <p class="drawn pop">${esc(p.receiver)}</p>
+      ${p.hint ? `<p class="hint"><b>Dica de presente:</b> ${esc(p.hint)}</p>` : ""}
+      ${factsHtml}
+      <p class="say small-say">Guarde segredo! Você pode abrir este link de novo quando quiser.</p>
+      <div class="big-btns">
+        ${nextBtn("Passar para a próxima pessoa →")}
+        <button type="button" class="btn huge no" data-go="ask">Esconder</button>
+      </div>`);
+  }
+  ask();
 }
 function renderInvalid(){
   app.innerHTML = `
@@ -1206,7 +1254,10 @@ function renderInvite(o){
 function render(){
   const h = location.hash.replace(/^#/, "");
   if (/^ao-/i.test(h)){
-    const d = readCode(h);
+    const c = readCode(h);
+    c ? renderReveal({ ...c, people: [{ giver: c.giver, receiver: c.receiver, hint: c.hint }] }) : renderInvalid();
+  } else if (/^am-/i.test(h)){
+    const d = readMulti(h);
     d ? renderReveal(d) : renderInvalid();
   } else if (/^org-/i.test(h)){
     const o = readInvite(h);
