@@ -5,7 +5,7 @@ Página de sorteio de amigo oculto para mandar pelo WhatsApp. Cada pessoa recebe
 ## O que a página faz
 
 - Cadastro do evento: nome, data, horário, local, valor do presente e um recado.
-- Lista de participantes com WhatsApp, **núcleo** (quem tem o mesmo núcleo não se tira, por exemplo casais) e dica de presente.
+- Lista de participantes com WhatsApp e dica de presente.
 - Quem não tem celular pode receber o link no celular de outra pessoa. Quem divide o mesmo número recebe os links juntos numa mensagem só.
 - O sorteio forma uma corrente única sempre que dá, para ninguém trocar presente só entre si.
 - Um botão por pessoa abre o WhatsApp com a mensagem pronta, e a página marca quem já recebeu.

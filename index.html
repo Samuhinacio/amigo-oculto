@@ -283,14 +283,13 @@ function readCode(raw){
 
 /* ---------- Estado do organizador (fica só neste navegador) ---------- */
 function sample(){
-  const g = "Ana e Pedro";
   return {
     example: true,
     event: { name: "Natal da Família 2026", date: "2026-12-24", time: "20:00", place: "Casa da vó Lúcia", budget: "100", notes: "Leve o presente embrulhado e com o nome de quem vai receber." },
     people: [
       { id: uid(), name: "Vó Lúcia", phone: "", group: "", hint: "" },
-      { id: uid(), name: "Ana", phone: "", group: g, hint: "Adora plantas" },
-      { id: uid(), name: "Pedro", phone: "", group: g, hint: "" },
+      { id: uid(), name: "Ana", phone: "", group: "", hint: "Adora plantas" },
+      { id: uid(), name: "Pedro", phone: "", group: "", hint: "" },
       { id: uid(), name: "Tio Carlos", phone: "", group: "", hint: "Torce pro Palmeiras" },
       { id: uid(), name: "Mariana", phone: "", group: "", hint: "" },
       { id: uid(), name: "Júlia", phone: "", group: "", hint: "Livros de suspense" }
@@ -485,8 +484,7 @@ function shuffle(a){
 }
 function solve(ppl){
   const n = ppl.length;
-  const grp = ppl.map(p => (p.group || "").trim().toLowerCase());
-  const ok = (i, j) => i !== j && !(grp[i] && grp[i] === grp[j]);
+  const ok = (i, j) => i !== j;
   const idx = [...Array(n).keys()];
   // 1) Tenta uma corrente única (ninguém troca presente entre si)
   for (let t = 0; t < 4000; t++){
@@ -552,10 +550,6 @@ function checks(){
   const seen = {}, dups = new Set();
   list.forEach(p => { const k = p.name.trim().toLowerCase(); if (seen[k]) dups.add(p.name.trim()); seen[k] = true; });
   if (dups.size) out.push({ k: "bad", t: `Nome repetido: ${[...dups].join(", ")}. Use sobrenome ou apelido para diferenciar.` });
-  const groups = {};
-  list.forEach(p => { const g = (p.group || "").trim(); if (g) groups[g] = (groups[g] || 0) + 1; });
-  const gNames = Object.keys(groups).filter(g => groups[g] > 1);
-  if (gNames.length) out.push({ k: "ok", t: `Núcleos respeitados: ${gNames.join(", ")} não tiram um ao outro.` });
   sharedGroups(list).filter(g => g.length > 1).forEach(g => {
     out.push({ k: "ok", t: `Mesmo celular: ${g.map(p => p.name.trim()).join(" e ")}. Cada um recebe o próprio link.` });
   });
@@ -728,7 +722,6 @@ function personRow(p, i){
       ${p.via && byId(p.via)
         ? `<p class="via-note">Sem celular próprio: o link vai para o WhatsApp de ${esc(byId(p.via).name || "outra pessoa")}.</p>`
         : `<label for="p-${id}-phone">WhatsApp<input id="p-${id}-phone" data-f="phone" inputmode="tel" value="${esc(p.phone)}" placeholder="(11) 98765-4321"></label>`}
-      <label for="p-${id}-group">Núcleo <small>mesmo núcleo não se tira</small><input id="p-${id}-group" data-f="group" list="groups" value="${esc(p.group)}" placeholder="Ex.: Ana e Pedro"></label>
       <label class="wide" for="p-${id}-hint">Dica de presente <small>aparece para quem tirar</small><input id="p-${id}-hint" data-f="hint" value="${esc(p.hint)}" placeholder="Ex.: gosta de chocolate, calça 38"></label>
     </div>
   </div>`;
@@ -737,15 +730,10 @@ function viaOptions(p){
   const others = state.people.filter(x => x !== p && x.name.trim());
   return `<option value="">Próprio celular</option>` + others.map(x => `<option value="${x.id}" ${p.via === x.id ? "selected" : ""}>${esc(x.name.trim())}</option>`).join("");
 }
-function groupOptions(){
-  const set = new Set(state.people.map(p => (p.group || "").trim()).filter(Boolean));
-  return [...set].map(g => `<option value="${esc(g)}"></option>`).join("");
-}
 function peopleEditor(){
   return `
-    <p class="small muted">Casais ou irmãos que não devem se tirar: escreva o mesmo <b>núcleo</b> para eles. O WhatsApp é opcional e serve para abrir a conversa certa na hora de enviar. Quem não tem celular pode <b>receber o link no celular de</b> outra pessoa.</p>
+    <p class="small muted">O WhatsApp é opcional e serve para abrir a conversa certa na hora de enviar. Quem não tem celular pode <b>receber o link no celular de</b> outra pessoa.</p>
     <div class="people" id="people">${state.people.map(personRow).join("")}</div>
-    <datalist id="groups">${groupOptions()}</datalist>
     <form class="row" id="add-form">
       <input class="grow" id="add-name" placeholder="Nome de mais alguém" aria-label="Nome da nova pessoa" autocomplete="off">
       <button type="submit" class="btn primary">Adicionar</button>
@@ -938,7 +926,7 @@ function doDraw(){
   const pairs = solve(ppl);
   if (!pairs){
     err.hidden = false;
-    err.textContent = "Não dá para sortear com esses núcleos: há gente demais no mesmo núcleo. Divida um núcleo grande (por exemplo, um casal por núcleo) e tente de novo.";
+    err.textContent = "Não consegui fazer o sorteio. Confira a lista e tente de novo.";
     return;
   }
   if (btn){ btn.disabled = true; btn.textContent = "Sorteando…"; }
@@ -986,7 +974,6 @@ document.addEventListener("input", e => {
     const p = state.people.find(x => x.id === id);
     if (p){ p[t.dataset.f] = t.value; save(); }
     if (t.dataset.f === "via"){ render(); return; }
-    if (t.dataset.f === "group"){ const dl = document.getElementById("groups"); if (dl) dl.innerHTML = groupOptions(); }
     refreshDrawPanel();
   } else if (t.id === "me"){
     state.me = t.value; save();
