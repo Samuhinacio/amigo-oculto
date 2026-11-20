@@ -170,6 +170,7 @@ footer{font-size:14px;color:#b8c7c0;display:flex;flex-direction:column;gap:6px;p
 .drawn{font-family:var(--display);font-weight:800;font-size:clamp(38px,11vw,60px);color:var(--berry);line-height:1.05;text-wrap:balance}
 .hint{background:#fff6dd;border-radius:10px;padding:8px 12px;font-size:15px;max-width:40ch}
 .notes{white-space:pre-wrap}
+.warn-note{background:#fff3d6;border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;font-size:15px}
 .mini-head{display:flex;flex-direction:column;gap:2px;padding:4px 2px}
 .mini-title{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.2}
 .simple{align-items:center;text-align:center;gap:14px;padding:30px 20px}
@@ -716,11 +717,12 @@ function renderOrganizer(){
     </section>
     ${locked ? sendSection() + pairsSection() : ""}
     <section class="card" aria-labelledby="h-team">
-      <div class="step-head"><h2 id="h-team">Organizar junto com alguém</h2></div>
+      <div class="step-head"><h2 id="h-team">Chamar alguém para ajudar a organizar</h2></div>
+      <p class="warn-note"><b>Não é o link da família.</b> ${locked ? "Os links de cada pessoa da família estão no passo 4, nos botões verdes." : "Os links de cada pessoa da família aparecem depois que você tocar em <b>Sortear agora</b> (passo 3)."}</p>
       <p class="small muted">Mande um convite para quem vai coordenar com você. A pessoa recebe a lista${locked ? ", o sorteio e quem já recebeu o link" : ""} no celular dela e pode ajudar a enviar.</p>
       <label for="me">Seu nome <small>aparece no convite</small><input id="me" value="${esc(state.me || "")}" placeholder="Ex.: Cláudia" autocomplete="given-name"></label>
       <p class="error" id="me-err" hidden>Escreva seu nome para a pessoa saber de quem é o convite.</p>
-      <button type="button" class="btn ghost" data-act="invite">Convidar para organizar</button>
+      <button type="button" class="btn ghost" data-act="invite">Convidar ajudante</button>
       <p class="small muted">Cada celular guarda a sua cópia. Se alguém mudar a lista, refizer o sorteio ou marcar envios, mande o convite de novo para os dois ficarem iguais. O melhor é combinar antes quem envia para quem.</p>
     </section>
     <section class="card" aria-labelledby="h-code">
