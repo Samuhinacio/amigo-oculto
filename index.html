@@ -670,7 +670,7 @@ function renderOrganizer(){
       <div class="step-head"><span class="num">3</span><h2 id="h-dr">Sorteio</h2>${locked ? `<span class="chip ok">Feito · nº ${esc(state.draw.id)}</span>` : ""}</div>
       <div id="draw-panel">${locked ? drawDone() : drawPanel()}</div>
     </section>
-    ${locked ? sendSection() : ""}
+    ${locked ? sendSection() + pairsSection() : ""}
     <section class="card" aria-labelledby="h-team">
       <div class="step-head"><h2 id="h-team">Organizar junto com alguém</h2></div>
       <p class="small muted">Mande um convite para quem vai coordenar com você. A pessoa recebe a lista${locked ? ", o sorteio e quem já recebeu o link" : ""} no celular dela e pode ajudar a enviar.</p>
@@ -794,7 +794,6 @@ function sendSection(){
     <details>
       <summary>Mais opções</summary>
       <div>
-        <button type="button" class="btn danger" data-act="reveal-all">Ver quem tirou quem</button>
         <button type="button" class="btn danger" data-act="redo">Refazer o sorteio</button>
       </div>
     </details>
@@ -950,20 +949,45 @@ function confirmRedo(editAfter){
   modal(editAfter ? "Editar e sortear de novo?" : "Refazer o sorteio?", body, [
     { label: "Cancelar" },
     { label: editAfter ? "Editar" : "Refazer", cls: "primary", run: () => {
-      state.draw = null; state.sent = {}; save(); render();
+      state.draw = null; state.sent = {}; showPairs = false; save(); render();
       if (!editAfter) setTimeout(doDraw, 50);
     } }
   ]);
 }
+let showPairs = false;
+function pairRows(){
+  return state.draw.people.map(id => {
+    const g = byId(id), r = byId(state.draw.pairs[id]);
+    return { giver: g ? g.name.trim() : "?", receiver: r ? r.name.trim() : "?", hint: r ? (r.hint || "").trim() : "" };
+  });
+}
+function pairsSection(){
+  const rows = pairRows();
+  return `<section class="card" aria-labelledby="h-pairs" id="pairs">
+    <div class="step-head"><h2 id="h-pairs">Lista de quem tirou quem</h2><span class="chip">Só para quem organiza</span></div>
+    ${showPairs ? `
+      <ul class="pairs">${rows.map(x => `<li><b>${esc(x.giver)}</b><span>tirou</span><b>${esc(x.receiver)}</b></li>`).join("")}</ul>
+      <div class="row">
+        <button type="button" class="btn ghost" data-act="copy-pairs">Copiar lista</button>
+        <button type="button" class="btn primary" data-act="hide-pairs">Esconder lista</button>
+      </div>
+      <p class="small muted">Cuidado ao mostrar a tela para alguém da família. A lista se esconde sozinha quando você fecha a página.</p>`
+    : `
+      <p class="small muted">Para quem organiza e não participa do sorteio. Fica escondida até você tocar no botão.</p>
+      <button type="button" class="btn ghost" data-act="show-pairs">Mostrar a lista</button>`}
+  </section>`;
+}
 function revealAll(){
-  modal("Ver quem tirou quem?", `<p>Isso mostra o resultado completo. Use só se você não participa do sorteio, ou se precisar resolver algum problema.</p>`, [
+  const go = () => { showPairs = true; render(); const el = document.getElementById("pairs"); if (el) el.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  if (state.notPlaying) return go();
+  modal("Você não participa do sorteio?", `<p>A lista mostra o resultado de todo mundo. Se você também está no sorteio, ver a lista estraga a sua surpresa.</p>`, [
     { label: "Cancelar" },
-    { label: "Mostrar", cls: "danger", run: () => {
-      const byId = id => state.people.find(p => p.id === id);
-      const rows = state.draw.people.map(id => `<li><b>${esc(byId(id)?.name)}</b><span>tirou</span><b>${esc(byId(state.draw.pairs[id])?.name)}</b></li>`).join("");
-      modal(`Sorteio nº ${state.draw.id}`, `<ul class="pairs">${rows}</ul>`, [{ label: "Fechar", cls: "primary" }]);
-    } }
+    { label: "Não participo, mostrar", cls: "primary", run: () => { state.notPlaying = true; save(); go(); } }
   ]);
+}
+function pairsText(){
+  const ev = state.draw.event;
+  return [`Amigo Oculto – ${ev.name || "Família"} (sorteio nº ${state.draw.id})`, "", ...pairRows().map(x => `${x.giver} → ${x.receiver}`)].join("\n");
 }
 
 document.addEventListener("input", e => {
@@ -1039,7 +1063,10 @@ document.addEventListener("click", e => {
     case "draw": doDraw(); break;
     case "edit": confirmRedo(true); break;
     case "redo": confirmRedo(false); break;
-    case "reveal-all": revealAll(); break;
+    case "reveal-all":
+    case "show-pairs": revealAll(); break;
+    case "hide-pairs": showPairs = false; render(); break;
+    case "copy-pairs": copy(pairsText(), "Lista copiada"); break;
     case "invite": openInvite(); break;
     case "join": {
       const o = readInvite(location.hash);
